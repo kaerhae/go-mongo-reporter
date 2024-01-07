@@ -2,8 +2,8 @@ package routes
 
 import (
 	"log"
-	"main/reporter-backend/cmd/models"
-	"main/reporter-backend/cmd/services"
+	"main/cmd/models"
+	"main/cmd/services"
 	"net/http"
 	"time"
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"main/reporter-backend/cmd/routes"
+	"main/cmd/routes"
 
 	"github.com/gin-gonic/gin"
 )

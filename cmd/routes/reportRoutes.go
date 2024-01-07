@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"main/reporter-backend/cmd/services"
+	"main/cmd/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
