@@ -1,18 +1,18 @@
-package service
+package services
 
 import (
-	"cmd/reporter-backend/cmd/databaseContext"
-	"cmd/reporter-backend/cmd/models"
-	"cmd/reporter-backend/configs"
 	"fmt"
 	"log"
+	"main/reporter-backend/cmd/db"
+	"main/reporter-backend/cmd/models"
+	"main/reporter-backend/configs"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func CheckExistingUser(username string) bool {
 
-	client, ctx, cancel, err := databaseContext.MongoConnect(configs.GetMongoURI())
+	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func CheckExistingUser(username string) bool {
 		return false
 	}
 
-	defer databaseContext.MongoClose(client, ctx, cancel)
+	defer db.MongoClose(client, ctx, cancel)
 
 	return true
 
@@ -34,7 +34,7 @@ func CheckExistingUser(username string) bool {
 
 func CreateUser(user models.User) models.User {
 
-	client, ctx, cancel, err := databaseContext.MongoConnect(configs.GetMongoURI())
+	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func CreateUser(user models.User) models.User {
 
 	fmt.Println("Added new user: ", addUser.InsertedID)
 
-	defer databaseContext.MongoClose(client, ctx, cancel)
+	defer db.MongoClose(client, ctx, cancel)
 
 	return user
 }

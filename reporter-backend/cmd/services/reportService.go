@@ -1,10 +1,10 @@
-package service
+package services
 
 import (
-	"cmd/reporter-backend/cmd/databaseContext"
-	"cmd/reporter-backend/cmd/models"
-	"cmd/reporter-backend/configs"
 	"log"
+	"main/reporter-backend/cmd/db"
+	"main/reporter-backend/cmd/models"
+	"main/reporter-backend/configs"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +12,7 @@ import (
 )
 
 func GetReportsCollection() []*models.Report {
-	client, ctx, cancel, err := databaseContext.MongoConnect(configs.GetMongoURI())
+	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func GetReportsCollection() []*models.Report {
 
 	cur.Close(ctx)
 
-	defer databaseContext.MongoClose(client, ctx, cancel)
+	defer db.MongoClose(client, ctx, cancel)
 
 	return results
 

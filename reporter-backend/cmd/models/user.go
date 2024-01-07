@@ -2,18 +2,19 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Username   string
-	Email      string
-	Password   string
-	Created_At string
-	Token      string
-	Role       string
+	ID            primitive.ObjectID `bson:"_id"`
+	Username      string
+	Email         string
+	Password_hash string
+	Created_At    string
+	Token         string
+	App_Role      string
 }
 
 type Role string
@@ -27,6 +28,7 @@ const (
 )
 
 func DetermineRole(role string) (Role, error) {
+	fmt.Println(role)
 	switch role {
 	case "admin":
 		return Admin, nil
