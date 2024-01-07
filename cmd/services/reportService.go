@@ -2,9 +2,9 @@ package services
 
 import (
 	"log"
-	"main/reporter-backend/cmd/db"
-	"main/reporter-backend/cmd/models"
-	"main/reporter-backend/configs"
+	"main/cmd/db"
+	"main/cmd/models"
+	"main/configs"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
