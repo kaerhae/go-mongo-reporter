@@ -1,9 +1,6 @@
 package models
 
 import (
-	"errors"
-	"fmt"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -26,19 +23,3 @@ const (
 	Guest      Role = "guest"
 	Undefined  Role = ""
 )
-
-func DetermineRole(role string) (Role, error) {
-	fmt.Println(role)
-	switch role {
-	case "admin":
-		return Admin, nil
-	case "maintainer":
-		return Maintainer, nil
-	case "creator":
-		return Creator, nil
-	case "guest":
-		return Guest, nil
-	default:
-		return Undefined, errors.New("Role undefined: " + role)
-	}
-}

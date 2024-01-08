@@ -23,3 +23,8 @@ func GetDBName() string {
 	DotenvInit()
 	return os.Getenv("DATABASE")
 }
+
+func GetSecret() string {
+	DotenvInit()
+	return os.Getenv("SECRET_KEY")
+}

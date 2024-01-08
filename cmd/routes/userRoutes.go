@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"log"
+	"fmt"
 	"main/cmd/models"
 	"main/cmd/services"
 	"net/http"
@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var validate = validator.New()
@@ -25,10 +24,10 @@ func PostNewUser(c *gin.Context) {
 		return
 	}
 
-	isExisting := services.CheckExistingUser(body.Username)
+	_, err := services.CheckExistingUser(body.Username)
 
 	/* Tarkistetaan löytyykö käyttäjää ennestään */
-	if isExisting {
+	if err == nil {
 		c.IndentedJSON(http.StatusBadRequest, "Username already exists")
 		return
 	}
@@ -38,13 +37,13 @@ func PostNewUser(c *gin.Context) {
 		return
 	}
 
-	role, err := models.DetermineRole(string(body.App_Role))
+	role, err := services.DetermineRole(string(body.App_Role))
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, "Malformatted role")
 		return
 	}
 
-	hash, err := hashPwd(body.Password_hash)
+	hash, err := services.HashPwd(body.Password_hash)
 	if err != nil {
 		c.IndentedJSON(500, "Server failed")
 		return
@@ -58,42 +57,58 @@ func PostNewUser(c *gin.Context) {
 		Created_At:    time.Now().UTC().String(),
 		App_Role:      string(role),
 	}
-	services.CreateUser(newUser)
+	u, err := services.CreateUser(newUser)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{
+			"message": "Internal server error",
+		})
+	}
+
+	c.IndentedJSON(200, gin.H{
+		"message": fmt.Sprintf("New user %s was succesfully created", u.Username),
+	})
+
 }
 
 // POST /login
-func loginUser(c *gin.Context) {
+func LoginUser(c *gin.Context) {
 	var body models.User
 
 	if err := c.BindJSON(&body); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Error in handling request")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Error in handling request",
+		})
 		return
 	}
 
-}
-
-func hashPwd(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword(
-		[]byte(password),
-		bcrypt.MinCost,
-	)
+	existingUser, err := services.CheckExistingUser(body.Username)
 	if err != nil {
-		log.Fatal(err)
-		return "", err
+		c.IndentedJSON(401, gin.H{
+			"message": "No user found",
+		})
+		return
 	}
 
-	return string(hash), nil
-}
+	isCorrectPassword := services.CheckPassword(existingUser.Password_hash, body.Password_hash)
 
-func checkPassword(hashedPassword string, plainPassword string) bool {
-	bytePlain := []byte(plainPassword)
-	byteHashed := []byte(hashedPassword)
-
-	err := bcrypt.CompareHashAndPassword(byteHashed, bytePlain)
-	if err != nil {
-		log.Println(err)
-		return false
+	if !isCorrectPassword {
+		c.IndentedJSON(401, gin.H{
+			"message": "Incorrect password",
+		})
+		return
 	}
 
-	return true
+	token, err := services.CreateToken(body.Username)
+
+	if err != nil {
+		c.IndentedJSON(500, gin.H{
+			"message": "Internal server error",
+		})
+		return
+	}
+
+	c.IndentedJSON(200, gin.H{
+		"message": "Login succesfull",
+		"token":   token.Token,
+	})
 }

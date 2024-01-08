@@ -16,7 +16,7 @@ func main() {
 	})
 	router.GET("/api/reports", routes.GetReports)
 	router.POST("/signup", routes.PostNewUser)
-	router.POST("/login")
+	router.POST("/login", routes.LoginUser)
 
 	log.Fatal(router.Run("localhost:3000"))
 }
