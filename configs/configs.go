@@ -29,3 +29,8 @@ func GetSecret() string {
 	DotenvInit()
 	return os.Getenv("SECRET_KEY")
 }
+
+func GetPort() string {
+	DotenvInit()
+	return os.Getenv("PORT")
+}
