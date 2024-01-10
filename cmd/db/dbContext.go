@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"main/configs"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,11 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-func MongoConnect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
+func MongoConnect(uri string) (*mongo.Database, context.Context, context.CancelFunc, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-	return client, ctx, cancel, err
+	if err != nil {
+
+	}
+	return client.Database(configs.GetDBName()), ctx, cancel, err
 }
 
 func MongoClose(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {

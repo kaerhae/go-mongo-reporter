@@ -12,14 +12,16 @@ import (
 )
 
 func GetReportsCollection() []*models.Report {
-	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
+	db, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		panic(err)
 	}
 
+	defer cancel()
+
 	var results []*models.Report
 
-	var reports *mongo.Collection = client.Database(configs.GetDBName()).Collection("reports")
+	var reports *mongo.Collection = db.Collection("reports")
 
 	opts := options.Find()
 
@@ -43,8 +45,6 @@ func GetReportsCollection() []*models.Report {
 	}
 
 	cur.Close(ctx)
-
-	defer db.MongoClose(client, ctx, cancel)
 
 	return results
 

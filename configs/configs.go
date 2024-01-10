@@ -8,6 +8,7 @@ import (
 )
 
 func DotenvInit() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error on loading .env file")
@@ -22,4 +23,14 @@ func GetMongoURI() string {
 func GetDBName() string {
 	DotenvInit()
 	return os.Getenv("DATABASE")
+}
+
+func GetSecret() string {
+	DotenvInit()
+	return os.Getenv("SECRET_KEY")
+}
+
+func GetPort() string {
+	DotenvInit()
+	return os.Getenv("PORT")
 }

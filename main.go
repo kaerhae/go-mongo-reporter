@@ -1,22 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"main/cmd/routes"
-
-	"github.com/gin-gonic/gin"
+	"main/configs"
 )
 
 func main() {
-	router := gin.Default()
 
-	/* GET index */
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.String(200, "Server up and running!")
-	})
-	router.GET("/api/reports", routes.GetReports)
-	router.POST("/signup", routes.PostNewUser)
-	router.POST("/login")
-
-	log.Fatal(router.Run("localhost:3000"))
+	router := routes.SetupRouter()
+	log.Fatal(router.Run(fmt.Sprintf("localhost:%s", configs.GetPort())))
 }
