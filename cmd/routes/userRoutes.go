@@ -122,7 +122,7 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, gin.H{
-		"message": "Login succesfull",
+		"message": "Login succesful",
 		"token":   token.Token,
 	})
 }

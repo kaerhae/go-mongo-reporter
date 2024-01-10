@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"main/cmd/models"
 	"main/cmd/repository"
@@ -106,7 +105,6 @@ func (u *userService) CreateToken(username string) (*models.Claims, error) {
 }
 
 func (u *userService) DetermineRole(role string) (models.Role, error) {
-	fmt.Println(role)
 	switch role {
 	case "admin":
 		return models.Admin, nil
