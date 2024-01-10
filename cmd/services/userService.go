@@ -4,62 +4,56 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"main/cmd/db"
 	"main/cmd/models"
+	"main/cmd/repository"
 	"main/configs"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var secretKey = []byte(configs.GetSecret())
 
-func CheckExistingUser(username string) (models.User, error) {
-
-	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
-	if err != nil {
-		return models.User{}, err
-	}
-
-	collection := client.Database(configs.GetDBName()).Collection("users")
-	filter := bson.D{{Key: "username", Value: username}}
-	var result models.User
-	err = collection.FindOne(ctx, filter).Decode(&result)
-
-	if err != nil {
-		return models.User{}, err
-	}
-
-	defer db.MongoClose(client, ctx, cancel)
-
-	return result, nil
-
+type UserService interface {
+	CreateUser(user models.User) (string, error)
+	CheckExistingUser(username string) (models.User, error)
+	HashPwd(password string) (string, error)
+	CheckPassword(hashedPassword string, plainPassword string) bool
+	CreateToken(username string) (*models.Claims, error)
+	DetermineRole(role string) (models.Role, error)
 }
 
-func CreateUser(user models.User) (models.User, error) {
+type userService struct {
+	Repository repository.UserRepository
+}
 
-	client, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
+func NewUserService(repo repository.UserRepository) UserService {
+
+	return &userService{Repository: repo}
+}
+
+func (u *userService) CreateUser(user models.User) (string, error) {
+	r := u.Repository
+	addedUser, err := r.Create(&user)
+	if err != nil {
+		return "", err
+	}
+
+	return addedUser, nil
+}
+
+func (u *userService) CheckExistingUser(username string) (models.User, error) {
+	r := u.Repository
+	user, err := r.GetSingleUser(username)
 	if err != nil {
 		return models.User{}, err
 	}
-
-	collection := client.Database(configs.GetDBName()).Collection("users")
-
-	addUser, err := collection.InsertOne(ctx, user)
-	if err != nil {
-		return models.User{}, err
-	}
-
-	fmt.Println("Added new user: ", addUser.InsertedID)
-
-	defer db.MongoClose(client, ctx, cancel)
 
 	return user, nil
 }
 
-func HashPwd(password string) (string, error) {
+func (u *userService) HashPwd(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(
 		[]byte(password),
 		bcrypt.MinCost,
@@ -72,7 +66,7 @@ func HashPwd(password string) (string, error) {
 	return string(hash), nil
 }
 
-func CheckPassword(hashedPassword string, plainPassword string) bool {
+func (u *userService) CheckPassword(hashedPassword string, plainPassword string) bool {
 	bytePlain := []byte(plainPassword)
 	byteHashed := []byte(hashedPassword)
 
@@ -85,7 +79,7 @@ func CheckPassword(hashedPassword string, plainPassword string) bool {
 	return true
 }
 
-func CreateToken(username string) (*models.Claims, error) {
+func (u *userService) CreateToken(username string) (*models.Claims, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
@@ -111,7 +105,7 @@ func CreateToken(username string) (*models.Claims, error) {
 	return claims, nil
 }
 
-func DetermineRole(role string) (models.Role, error) {
+func (u *userService) DetermineRole(role string) (models.Role, error) {
 	fmt.Println(role)
 	switch role {
 	case "admin":

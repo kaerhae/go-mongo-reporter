@@ -8,6 +8,7 @@ import (
 )
 
 func DotenvInit() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error on loading .env file")

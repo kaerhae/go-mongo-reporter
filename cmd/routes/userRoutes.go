@@ -12,10 +12,23 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type UserRouter interface {
+	PostNewUser(c *gin.Context)
+	LoginUser(c *gin.Context)
+}
+
+type userRouter struct {
+	Service services.UserService
+}
+
 var validate = validator.New()
 
+func NewUserHandler(service services.UserService) UserRouter {
+	return &userRouter{Service: service}
+}
+
 // POST /users
-func PostNewUser(c *gin.Context) {
+func (u *userRouter) PostNewUser(c *gin.Context) {
 	var body models.User
 
 	/* Bindataan request body muuttujaan body */
@@ -24,7 +37,7 @@ func PostNewUser(c *gin.Context) {
 		return
 	}
 
-	_, err := services.CheckExistingUser(body.Username)
+	_, err := u.Service.CheckExistingUser(body.Username)
 
 	/* Tarkistetaan löytyykö käyttäjää ennestään */
 	if err == nil {
@@ -37,13 +50,13 @@ func PostNewUser(c *gin.Context) {
 		return
 	}
 
-	role, err := services.DetermineRole(string(body.App_Role))
+	role, err := u.Service.DetermineRole(string(body.App_Role))
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, "Malformatted role")
 		return
 	}
 
-	hash, err := services.HashPwd(body.Password_hash)
+	hash, err := u.Service.HashPwd(body.Password_hash)
 	if err != nil {
 		c.IndentedJSON(500, "Server failed")
 		return
@@ -57,7 +70,8 @@ func PostNewUser(c *gin.Context) {
 		Created_At:    time.Now().UTC().String(),
 		App_Role:      string(role),
 	}
-	u, err := services.CreateUser(newUser)
+
+	userId, err := u.Service.CreateUser(newUser)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{
 			"message": "Internal server error",
@@ -65,13 +79,13 @@ func PostNewUser(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, gin.H{
-		"message": fmt.Sprintf("New user %s was succesfully created", u.Username),
+		"message": fmt.Sprintf("New user %s was succesfully created", userId),
 	})
 
 }
 
 // POST /login
-func LoginUser(c *gin.Context) {
+func (u *userRouter) LoginUser(c *gin.Context) {
 	var body models.User
 
 	if err := c.BindJSON(&body); err != nil {
@@ -81,7 +95,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	existingUser, err := services.CheckExistingUser(body.Username)
+	existingUser, err := u.Service.CheckExistingUser(body.Username)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{
 			"message": "No user found",
@@ -89,7 +103,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	isCorrectPassword := services.CheckPassword(existingUser.Password_hash, body.Password_hash)
+	isCorrectPassword := u.Service.CheckPassword(existingUser.Password_hash, body.Password_hash)
 
 	if !isCorrectPassword {
 		c.IndentedJSON(401, gin.H{
@@ -98,7 +112,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := services.CreateToken(body.Username)
+	token, err := u.Service.CreateToken(body.Username)
 
 	if err != nil {
 		c.IndentedJSON(500, gin.H{
