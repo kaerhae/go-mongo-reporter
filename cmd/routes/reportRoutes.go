@@ -2,7 +2,6 @@ package routes
 
 import (
 	"main/cmd/services"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,8 +23,13 @@ func NewReportRouter(service services.ReportService) ReportRouter {
 }
 
 // Get implements ReportRouter.
-func (*reportRouter) Get(*gin.Context) {
-	panic("unimplemented")
+func (r *reportRouter) Get(c *gin.Context) {
+	reports, err := r.Service.GetAllReports()
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"message": "Internal server error"})
+	}
+
+	c.IndentedJSON(200, reports)
 }
 
 // GetById implements ReportRouter.
@@ -46,9 +50,4 @@ func (*reportRouter) Update(*gin.Context) {
 // Delete implements ReportRouter.
 func (*reportRouter) Delete(*gin.Context) {
 	panic("unimplemented")
-}
-
-func GetReports(c *gin.Context) {
-	reports := services.GetReportsCollection()
-	c.IndentedJSON(http.StatusOK, reports)
 }
