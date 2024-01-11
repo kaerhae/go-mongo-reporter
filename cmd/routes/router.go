@@ -16,17 +16,28 @@ func SetupRouter() *gin.Engine {
 		log.Fatal("Error on init db")
 	}
 	defer cancel()
-	repo := repository.NewUserRepository(db)
-	service := services.NewUserService(repo)
-	handler := NewUserHandler(service)
+	userRepo := repository.NewUserRepository(db)
+	userService := services.NewUserService(userRepo)
+	userHandler := NewUserHandler(userService)
+
+	reportRepo := repository.NewReportRepository(db)
+	reportService := services.NewReportService(reportRepo)
+	reportHandler := NewReportRouter(reportService)
+
 	router := gin.Default()
 
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.String(200, "Server up and running!")
 	})
-	router.GET("/api/reports", GetReports)
-	router.POST("/signup", handler.PostNewUser)
-	router.POST("/login", handler.LoginUser)
+
+	router.GET("/api/reports", reportHandler.Get)
+	router.GET("/api/reports/:id", reportHandler.GetById)
+	router.POST("/api/reports", reportHandler.Post)
+	router.PUT("/api/reports/:id", reportHandler.Update)
+	router.DELETE("/api/reports/:id", reportHandler.Delete)
+
+	router.POST("/signup", userHandler.PostNewUser)
+	router.POST("/login", userHandler.LoginUser)
 
 	return router
 }
