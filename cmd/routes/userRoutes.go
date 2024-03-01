@@ -112,7 +112,7 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := u.Service.CreateToken(body.Username)
+	token, err := u.Service.CreateToken(body.Username, existingUser.App_Role)
 
 	if err != nil {
 		c.IndentedJSON(500, gin.H{

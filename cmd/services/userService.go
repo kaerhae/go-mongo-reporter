@@ -19,7 +19,7 @@ type UserService interface {
 	CheckExistingUser(username string) (models.User, error)
 	HashPwd(password string) (string, error)
 	CheckPassword(hashedPassword string, plainPassword string) bool
-	CreateToken(username string) (*models.Claims, error)
+	CreateToken(username string, app_role string) (*models.Claims, error)
 	DetermineRole(role string) (models.Role, error)
 }
 
@@ -78,7 +78,7 @@ func (u *userService) CheckPassword(hashedPassword string, plainPassword string)
 	return true
 }
 
-func (u *userService) CreateToken(username string) (*models.Claims, error) {
+func (u *userService) CreateToken(username string, app_role string) (*models.Claims, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
@@ -90,6 +90,7 @@ func (u *userService) CreateToken(username string) (*models.Claims, error) {
 	tokenstring, err := token.SignedString(secretKey)
 	claims := &models.Claims{
 		Username:       username,
+		App_Role:       app_role,
 		Token:          tokenstring,
 		ExpirationTime: expirationTime,
 		StandardClaims: jwt.StandardClaims{

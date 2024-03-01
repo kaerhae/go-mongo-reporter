@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type mockReportRepository struct{}
 type mockUserRepository struct{}
 
 func (m *mockUserRepository) Create(user *models.User) (string, error) {
@@ -39,3 +40,17 @@ func TestingEnvHashPwd(pass string) (string, error) {
 
 	return string(hash), nil
 }
+
+func (r *mockReportRepository) Create(report *models.Report) error { return nil }
+
+func (r *mockReportRepository) Get() ([]models.Report, error) {
+	var list []models.Report
+	list = append(list, models.Report{})
+	return list, nil
+}
+
+func (r *mockReportRepository) GetSingle(id string) (models.Report, error) {
+	return models.Report{}, nil
+}
+func (r *mockReportRepository) Update(newReport *models.Report) error { return nil }
+func (r *mockReportRepository) Delete(id string) error                { return nil }

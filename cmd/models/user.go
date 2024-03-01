@@ -6,12 +6,12 @@ import (
 
 type User struct {
 	ID            primitive.ObjectID `bson:"_id"`
-	Username      string
-	Email         string
-	Password_hash string
-	Created_At    string
-	Token         string
-	App_Role      string
+	Username      string             `json:"username"`
+	Email         string             `json:"email"`
+	Password_hash string             `json:"password_hash"`
+	Created_At    string             `json:"created_at"`
+	Token         string             `json:"token"`
+	App_Role      string             `json:"app_role"`
 }
 
 type Role string

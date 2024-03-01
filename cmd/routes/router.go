@@ -3,6 +3,7 @@ package routes
 import (
 	"log"
 	"main/cmd/db"
+	"main/cmd/middleware"
 	"main/cmd/repository"
 	"main/cmd/services"
 	"main/configs"
@@ -26,15 +27,18 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 
+	authorizedGroup := router.Group("/api")
+	authorizedGroup.Use(middleware.Authenticate())
+	{
+		authorizedGroup.GET("/reports", reportHandler.Get)
+		authorizedGroup.GET("/reports/:id", reportHandler.GetById)
+		authorizedGroup.POST("/reports", reportHandler.Post)
+		authorizedGroup.PUT("/reports/:id", reportHandler.Update)
+		authorizedGroup.DELETE("/reports/:id", reportHandler.Delete)
+	}
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.String(200, "Server up and running!")
 	})
-
-	router.GET("/api/reports", reportHandler.Get)
-	router.GET("/api/reports/:id", reportHandler.GetById)
-	router.POST("/api/reports", reportHandler.Post)
-	router.PUT("/api/reports/:id", reportHandler.Update)
-	router.DELETE("/api/reports/:id", reportHandler.Delete)
 
 	router.POST("/signup", userHandler.PostNewUser)
 	router.POST("/login", userHandler.LoginUser)

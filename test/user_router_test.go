@@ -42,7 +42,7 @@ func (s *MockService) CheckPassword(hashedPassword string, plainPassword string)
 }
 
 // CreateToken implements services.UserService.
-func (s *MockService) CreateToken(username string) (*models.Claims, error) {
+func (s *MockService) CreateToken(username string, app_role string) (*models.Claims, error) {
 	return &models.Claims{}, nil
 }
 

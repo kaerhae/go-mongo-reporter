@@ -1,8 +1,10 @@
 package models
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Report struct {
-	ID          string `bson:"_id"`
-	Topic       string
-	Author      string
-	Description string
+	ID          primitive.ObjectID `bson:"_id"`
+	Topic       string             `json:"topic"`
+	Author      string             `json:"author"`
+	Description string             `json:"description"`
 }
