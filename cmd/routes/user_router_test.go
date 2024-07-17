@@ -1,25 +1,24 @@
-package test
+package routes_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"main/cmd/helpers"
 	"main/cmd/models"
 	"main/cmd/routes"
 	"main/cmd/services"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var id primitive.ObjectID = primitive.NewObjectID()
-
 type MockService struct {
-	Repository mockUserRepository
+	Repository helpers.MockUserRepository
 }
 
 type SingleMessageResponse struct {
@@ -68,15 +67,15 @@ func SetUpRouter() *gin.Engine {
 
 func TestPostNewUser(t *testing.T) {
 	newUser := models.User{
-		Username:      "testerUser",
-		Email:         "test@test.com",
-		Password_hash: "passhash",
-		App_Role:      "guest",
-		Created_At:    "nil",
+		Username:     "testerUser",
+		Email:        "test@test.com",
+		PasswordHash: "passhash",
+		AppRole:      "guest",
+		CreatedAt:    "nil",
 	}
 
-	repo := &mockUserRepository{}
-	s := &MockService{Repository: *repo}
+	repo := helpers.InitMockRepository()
+	s := &MockService{Repository: repo}
 	handler := routes.NewUserHandler(s)
 	router := SetUpRouter()
 	router.POST("/signup", handler.PostNewUser)
@@ -96,13 +95,14 @@ func TestPostNewUser(t *testing.T) {
 }
 
 func TestLoginUserShouldBeSuccess(t *testing.T) {
+	os.Setenv("DATABASE_URI", "test")
 	/* This test is going to compare user object password to object that MockUserRepository GetSingleUser retrieves */
 	user := models.User{
-		Username:      "testerUser",
-		Password_hash: "strong-password",
+		Username:     "testerUser",
+		PasswordHash: "strong-password",
 	}
 
-	repo := &mockUserRepository{}
+	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
 	handler := routes.NewUserHandler(s)
 	router := SetUpRouter()
@@ -119,16 +119,17 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "Login succesful", response.Message)
+	os.Unsetenv("DATABASE_URI")
 }
 
 func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	/* This test is going to compare user object password to object that MockUserRepository GetSingleUser retrieves */
 	user := models.User{
-		Username:      "testerUser",
-		Password_hash: "weak-wrong-password",
+		Username:     "testerUser",
+		PasswordHash: "weak-wrong-password",
 	}
 
-	repo := &mockUserRepository{}
+	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
 	handler := routes.NewUserHandler(s)
 	router := SetUpRouter()

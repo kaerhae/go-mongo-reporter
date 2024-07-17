@@ -1,18 +1,16 @@
 package services
 
 import (
-	"log"
 	"main/cmd/db"
 	"main/cmd/models"
 	"main/configs"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetReportsCollection() []*models.Report {
-	db, ctx, cancel, err := db.MongoConnect(configs.GetMongoURI())
+func GetReportsCollection() ([]*models.Report, error) {
+	ctx, db, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		panic(err)
 	}
@@ -21,31 +19,31 @@ func GetReportsCollection() []*models.Report {
 
 	var results []*models.Report
 
-	var reports *mongo.Collection = db.Collection("reports")
+	reports := db.Collection("reports")
 
 	opts := options.Find()
 
 	cur, err := reports.Find(ctx, bson.D{{}}, opts)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	for cur.Next(ctx) {
 		var elem models.Report
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		results = append(results, &elem)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	cur.Close(ctx)
 
-	return results
+	return results, nil
 
 }

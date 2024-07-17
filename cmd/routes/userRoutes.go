@@ -50,28 +50,28 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		return
 	}
 
-	role, err := u.Service.DetermineRole(string(body.App_Role))
+	role, err := u.Service.DetermineRole(string(body.AppRole))
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, "Malformatted role")
 		return
 	}
 
-	hash, err := u.Service.HashPwd(body.Password_hash)
+	hash, err := u.Service.HashPwd(body.PasswordHash)
 	if err != nil {
 		c.IndentedJSON(500, "Server failed")
 		return
 	}
 
 	newUser := models.User{
-		ID:            primitive.NewObjectID(),
-		Username:      body.Username,
-		Email:         body.Email,
-		Password_hash: hash,
-		Created_At:    time.Now().UTC().String(),
-		App_Role:      string(role),
+		ID:           primitive.NewObjectID(),
+		Username:     body.Username,
+		Email:        body.Email,
+		PasswordHash: hash,
+		CreatedAt:    time.Now().UTC().String(),
+		AppRole:      string(role),
 	}
 
-	userId, err := u.Service.CreateUser(newUser)
+	userID, err := u.Service.CreateUser(newUser)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{
 			"message": "Internal server error",
@@ -79,7 +79,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, gin.H{
-		"message": fmt.Sprintf("New user %s was succesfully created", userId),
+		"message": fmt.Sprintf("New user %s was succesfully created", userID),
 	})
 
 }
@@ -103,7 +103,7 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 		return
 	}
 
-	isCorrectPassword := u.Service.CheckPassword(existingUser.Password_hash, body.Password_hash)
+	isCorrectPassword := u.Service.CheckPassword(existingUser.PasswordHash, body.PasswordHash)
 
 	if !isCorrectPassword {
 		c.IndentedJSON(401, gin.H{

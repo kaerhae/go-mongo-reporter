@@ -1,4 +1,4 @@
-package test
+package helpers
 
 import (
 	"log"
@@ -8,6 +8,14 @@ import (
 )
 
 type mockUserRepository struct{}
+type MockUserRepository interface {
+	Create(user *models.User) (string, error)
+	GetSingleUser(username string) (models.User, error)
+}
+
+func InitMockRepository() MockUserRepository {
+	return &mockUserRepository{}
+}
 
 func (m *mockUserRepository) Create(user *models.User) (string, error) {
 	return user.ID.Hex(), nil
@@ -19,11 +27,11 @@ func (m *mockUserRepository) GetSingleUser(username string) (models.User, error)
 		log.Fatal(err)
 	}
 	return models.User{
-		Username:      "test",
-		Password_hash: pwd,
-		Email:         "test@test.com",
-		App_Role:      "guest",
-		Created_At:    "2023-01-01",
+		Username:     username,
+		PasswordHash: pwd,
+		Email:        "test@test.com",
+		AppRole:      "guest",
+		CreatedAt:    "2023-01-01",
 	}, nil
 }
 

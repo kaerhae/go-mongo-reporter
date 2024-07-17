@@ -8,6 +8,9 @@ import (
 )
 
 func GetReports(c *gin.Context) {
-	reports := services.GetReportsCollection()
+	reports, err := services.GetReportsCollection()
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
 	c.IndentedJSON(http.StatusOK, reports)
 }

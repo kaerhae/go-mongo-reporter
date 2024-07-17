@@ -11,7 +11,7 @@ import (
 )
 
 func SetupRouter() *gin.Engine {
-	db, _, cancel, err := db.MongoConnect(configs.GetMongoURI())
+	_, db, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		log.Fatal("Error on init db")
 	}
