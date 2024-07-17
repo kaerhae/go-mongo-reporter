@@ -1,6 +1,7 @@
-package test
+package services_test
 
 import (
+	"main/cmd/helpers"
 	"main/cmd/models"
 	"main/cmd/services"
 	"testing"
@@ -10,13 +11,13 @@ import (
 
 func TestRegistrationShouldReturnId(t *testing.T) {
 	newUser := models.User{
-		Username:      "test",
-		Email:         "test@test.com",
-		Password_hash: "test",
-		App_Role:      "guest",
-		Created_At:    "nil",
+		Username:     "test",
+		Email:        "test@test.com",
+		PasswordHash: "test",
+		AppRole:      "guest",
+		CreatedAt:    "nil",
 	}
-	repo := &mockUserRepository{}
+	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
 	tUser, err := s.CreateUser(newUser)
 	if err != nil {
@@ -27,7 +28,7 @@ func TestRegistrationShouldReturnId(t *testing.T) {
 }
 
 func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
-	repo := &mockUserRepository{}
+	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
 	g, err := s.DetermineRole("guest")
 	if err != nil {
@@ -44,7 +45,7 @@ func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
 }
 
 func TestRoleDeterminationShouldRetunUndefined(t *testing.T) {
-	repo := &mockUserRepository{}
+	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
 	g, err := s.DetermineRole("other")
 	if err == nil || g != models.Undefined {

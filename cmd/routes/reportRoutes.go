@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+<<<<<<< HEAD
 type ReportRouter interface {
 	Get(*gin.Context)
 	GetById(*gin.Context)
@@ -114,4 +115,12 @@ func (r *reportRouter) Delete(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully deleted", id))
+=======
+func GetReports(c *gin.Context) {
+	reports, err := services.GetReportsCollection()
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
+	c.IndentedJSON(http.StatusOK, reports)
+>>>>>>> master
 }

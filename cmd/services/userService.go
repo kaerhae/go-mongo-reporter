@@ -12,8 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var secretKey = []byte(configs.GetSecret())
-
 type UserService interface {
 	CreateUser(user models.User) (string, error)
 	CheckExistingUser(username string) (models.User, error)
@@ -86,6 +84,8 @@ func (u *userService) CreateToken(username string, app_role string) (*models.Cla
 			"username": username,
 			"exp":      time.Now().Add(time.Minute * 30).Unix(),
 		})
+
+	secretKey := []byte(configs.GetSecret())
 
 	tokenstring, err := token.SignedString(secretKey)
 	claims := &models.Claims{
