@@ -1,4 +1,4 @@
-package routes_test
+package routes
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"errors"
 	"main/cmd/helpers"
 	"main/cmd/models"
-	"main/cmd/routes"
 	"main/cmd/services"
 	"net/http"
 	"net/http/httptest"
@@ -17,8 +16,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MockService struct {
+type MockUserService struct {
 	Repository helpers.MockUserRepository
+}
+
+// CheckExistingUser implements services.UserService.
+func (s *MockUserService) CheckExistingUser(username string) (models.User, error) {
+	return models.User{}, errors.New("")
+}
+
+// CheckPassword implements services.UserService.
+func (s *MockUserService) CheckPassword(hashedPassword string, plainPassword string) bool {
+	return true
+}
+
+// CreateToken implements services.UserService.
+func (s *MockUserService) CreateToken(user models.User) (*models.Claims, error) {
+	return &models.Claims{}, nil
+}
+
+// CreateUser implements services.UserService.
+func (s *MockUserService) CreateUser(user models.User) (string, error) {
+	return "1234", nil
+}
+
+// DetermineRole implements services.UserService.
+func (s *MockUserService) DetermineRole(role string) (models.Role, error) {
+	return models.Guest, nil
+}
+
+// HashPwd implements services.UserService.
+func (s *MockUserService) HashPwd(password string) (string, error) {
+	return "", nil
 }
 
 type SingleMessageResponse struct {
@@ -30,37 +59,8 @@ type LoginResponse struct {
 	Token   string
 }
 
-// CheckExistingUser implements services.UserService.
-func (s *MockService) CheckExistingUser(username string) (models.User, error) {
-	return models.User{}, errors.New("")
-}
-
-// CheckPassword implements services.UserService.
-func (s *MockService) CheckPassword(hashedPassword string, plainPassword string) bool {
-	return true
-}
-
-// CreateToken implements services.UserService.
-func (s *MockService) CreateToken(username string, app_role string) (*models.Claims, error) {
-	return &models.Claims{}, nil
-}
-
-// CreateUser implements services.UserService.
-func (s *MockService) CreateUser(user models.User) (string, error) {
-	return "1234", nil
-}
-
-// DetermineRole implements services.UserService.
-func (s *MockService) DetermineRole(role string) (models.Role, error) {
-	return models.Guest, nil
-}
-
-// HashPwd implements services.UserService.
-func (s *MockService) HashPwd(password string) (string, error) {
-	return "", nil
-}
-
 func SetUpRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	return router
 }
@@ -75,8 +75,8 @@ func TestPostNewUser(t *testing.T) {
 	}
 
 	repo := helpers.InitMockRepository()
-	s := &MockService{Repository: repo}
-	handler := routes.NewUserHandler(s)
+	s := &MockUserService{Repository: repo}
+	handler := NewUserHandler(s)
 	router := SetUpRouter()
 	router.POST("/signup", handler.PostNewUser)
 	w := httptest.NewRecorder()
@@ -104,8 +104,8 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 
 	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
-	handler := routes.NewUserHandler(s)
-	router := SetUpRouter()
+	handler := NewUserHandler(s)
+	router := gin.Default()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()
 	payload, _ := json.Marshal(user)
@@ -131,7 +131,7 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 
 	repo := helpers.InitMockRepository()
 	s := services.NewUserService(repo)
-	handler := routes.NewUserHandler(s)
+	handler := NewUserHandler(s)
 	router := SetUpRouter()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()

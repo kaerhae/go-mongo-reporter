@@ -1,17 +1,19 @@
 package services
 
 import (
-<<<<<<< HEAD
 	"main/cmd/models"
 	"main/cmd/repository"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ReportService interface {
 	GetAllReports() ([]models.Report, error)
 	GetSingleReport(id string) (models.Report, error)
-	CreateReport(report models.Report) error
+	CreateReport(report models.Report) (string, error)
 	UpdateReport(newReport models.Report) error
-	DeleteReport(id string) error
+	DeleteReport(id string) (int64, error)
+	UpdateReportReferences(userID primitive.ObjectID, reportID primitive.ObjectID) error
 }
 
 type reportService struct {
@@ -19,12 +21,12 @@ type reportService struct {
 }
 
 // CreateReport implements ReportService.
-func (r *reportService) CreateReport(report models.Report) error {
+func (r *reportService) CreateReport(report models.Report) (string, error) {
 	return r.Repository.Create(&report)
 }
 
 // DeleteReport implements ReportService.
-func (r *reportService) DeleteReport(id string) error {
+func (r *reportService) DeleteReport(id string) (int64, error) {
 	return r.Repository.Delete(id)
 }
 
@@ -43,53 +45,10 @@ func (r *reportService) UpdateReport(newReport models.Report) error {
 	return r.Repository.Update(&newReport)
 }
 
+func (r *reportService) UpdateReportReferences(userID primitive.ObjectID, reportID primitive.ObjectID) error {
+	return r.Repository.UpdateUserReportReferences(userID, reportID)
+}
+
 func NewReportService(repo repository.ReportRepository) ReportService {
 	return &reportService{Repository: repo}
-=======
-	"main/cmd/db"
-	"main/cmd/models"
-	"main/configs"
-
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-func GetReportsCollection() ([]*models.Report, error) {
-	ctx, db, cancel, err := db.MongoConnect(configs.GetMongoURI())
-	if err != nil {
-		panic(err)
-	}
-
-	defer cancel()
-
-	var results []*models.Report
-
-	reports := db.Collection("reports")
-
-	opts := options.Find()
-
-	cur, err := reports.Find(ctx, bson.D{{}}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	for cur.Next(ctx) {
-		var elem models.Report
-		err := cur.Decode(&elem)
-		if err != nil {
-			return nil, err
-		}
-
-		results = append(results, &elem)
-	}
-
-	if err := cur.Err(); err != nil {
-		return nil, err
-	}
-
-	cur.Close(ctx)
-
-	return results, nil
-
->>>>>>> master
 }

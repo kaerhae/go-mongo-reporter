@@ -9,10 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-<<<<<<< HEAD
 type ReportRouter interface {
 	Get(*gin.Context)
-	GetById(*gin.Context)
+	GetByID(*gin.Context)
 	Post(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
@@ -38,7 +37,7 @@ func (r *reportRouter) Get(c *gin.Context) {
 }
 
 // GetById implements ReportRouter.
-func (r *reportRouter) GetById(c *gin.Context) {
+func (r *reportRouter) GetByID(c *gin.Context) {
 	id := c.Param("id")
 	report, err := r.Service.GetSingleReport(id)
 	if err != nil {
@@ -58,15 +57,37 @@ func (r *reportRouter) Post(c *gin.Context) {
 		return
 	}
 
+	if body.UserID == "" {
+		c.AbortWithStatusJSON(400, gin.H{"message": "No userID found on request"})
+		return
+	}
+
+	reportID := primitive.NewObjectID()
+	userID, err := convertStringToPrimitiveID(body.UserID)
+	if err != nil {
+		fmt.Print(err)
+		c.AbortWithStatusJSON(500, gin.H{"message": "internal server error"})
+		return
+	}
 	newReport := models.Report{
-		ID:          primitive.NewObjectID(),
+		ID:          reportID,
 		Author:      body.Author,
 		Topic:       body.Topic,
 		Description: body.Description,
+		UserID:      body.UserID,
 	}
-	err = r.Service.CreateReport(newReport)
+	id, err := r.Service.CreateReport(newReport)
 	if err != nil {
-		c.IndentedJSON(400, "err")
+		c.IndentedJSON(400, "error on creating report")
+		return
+	}
+
+	fmt.Print("Succesfully created report with ID: ", id)
+
+	// Since MongoDB is document db, this function takes care of linking report to user
+	err = r.Service.UpdateReportReferences(userID, reportID)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"message": "error on updating user report references"})
 		return
 	}
 
@@ -79,7 +100,7 @@ func (r *reportRouter) Update(c *gin.Context) {
 	var body models.Report
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.IndentedJSON(400, gin.H{"message": "Internal server error"})
+		c.IndentedJSON(400, gin.H{"message": "error on parsing request body"})
 		return
 	}
 
@@ -94,6 +115,7 @@ func (r *reportRouter) Update(c *gin.Context) {
 		Author:      body.Author,
 		Topic:       body.Topic,
 		Description: body.Description,
+		UserID:      existingReport.UserID,
 	}
 	err = r.Service.UpdateReport(newReport)
 	if err != nil {
@@ -108,19 +130,21 @@ func (r *reportRouter) Update(c *gin.Context) {
 func (r *reportRouter) Delete(c *gin.Context) {
 	id := c.Param("id")
 
-	err := r.Service.DeleteReport(id)
+	count, err := r.Service.DeleteReport(id)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"message": "Internal server error"})
 		return
 	}
 
+	fmt.Print("Deleted count: ", count)
+
 	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully deleted", id))
-=======
-func GetReports(c *gin.Context) {
-	reports, err := services.GetReportsCollection()
+}
+
+func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {
+	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
+		return primitive.ObjectID{}, err
 	}
-	c.IndentedJSON(http.StatusOK, reports)
->>>>>>> master
+	return objID, nil
 }

@@ -28,10 +28,10 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	authorizedGroup := router.Group("/api")
-	authorizedGroup.Use(middleware.Authenticate())
+	authorizedGroup.Use(middleware.Authenticate)
 	{
 		authorizedGroup.GET("/reports", reportHandler.Get)
-		authorizedGroup.GET("/reports/:id", reportHandler.GetById)
+		authorizedGroup.GET("/reports/:id", reportHandler.GetByID)
 		authorizedGroup.POST("/reports", reportHandler.Post)
 		authorizedGroup.PUT("/reports/:id", reportHandler.Update)
 		authorizedGroup.DELETE("/reports/:id", reportHandler.Delete)

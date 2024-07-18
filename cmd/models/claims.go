@@ -8,7 +8,7 @@ import (
 
 type Claims struct {
 	Username       string `json:"username"`
-	App_Role       string `json:"app_role"`
+	AppRole        string `json:"appRole"`
 	Token          string
 	ExpirationTime time.Time
 	jwt.StandardClaims

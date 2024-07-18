@@ -11,11 +11,12 @@ import (
 )
 
 type ReportRepository interface {
-	Create(report *models.Report) error
+	Create(report *models.Report) (string, error)
 	Get() ([]models.Report, error)
 	GetSingle(id string) (models.Report, error)
 	Update(newReport *models.Report) error
-	Delete(id string) error
+	Delete(id string) (int64, error)
+	UpdateUserReportReferences(userID primitive.ObjectID, reportID primitive.ObjectID) error
 }
 
 type reportRepository struct {
@@ -26,16 +27,17 @@ func NewReportRepository(client *mongo.Database) ReportRepository {
 	return &reportRepository{Client: client}
 }
 
-func (r *reportRepository) Create(report *models.Report) error {
+func (r *reportRepository) Create(report *models.Report) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	collection := r.Client.Collection("reports")
-	_, err := collection.InsertOne(ctx, &report)
+	insertedID, err := collection.InsertOne(ctx, &report)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	id := insertedID.InsertedID.(primitive.ObjectID).Hex()
+	return id, nil
 }
 
 func (r *reportRepository) Get() ([]models.Report, error) {
@@ -62,13 +64,13 @@ func (r *reportRepository) GetSingle(id string) (models.Report, error) {
 
 	collection := r.Client.Collection("reports")
 	var report models.Report
-	objectId, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return models.Report{}, err
 	}
 	err = collection.FindOne(ctx, bson.D{{
 		Key:   "_id",
-		Value: objectId,
+		Value: objectID,
 	}}).Decode(&report)
 	if err != nil {
 		return models.Report{}, err
@@ -78,23 +80,23 @@ func (r *reportRepository) GetSingle(id string) (models.Report, error) {
 }
 
 // DeleteReport implements ReportRepository.
-func (r *reportRepository) Delete(id string) error {
+func (r *reportRepository) Delete(id string) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	collection := r.Client.Collection("reports")
-	objectId, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = collection.DeleteOne(ctx, bson.D{{
+	deletedResult, err := collection.DeleteOne(ctx, bson.D{{
 		Key:   "_id",
-		Value: objectId,
+		Value: objectID,
 	}})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return deletedResult.DeletedCount, nil
 }
 
 // UpdateReport implements ReportRepository.
@@ -108,6 +110,27 @@ func (r *reportRepository) Update(newReport *models.Report) error {
 		Key:   "_id",
 		Value: newReport.ID,
 	}}, bson.M{"$set": newReport})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *reportRepository) UpdateUserReportReferences(userID primitive.ObjectID, reportID primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	collection := r.Client.Collection("users")
+	_, err := collection.UpdateOne(ctx, bson.D{{
+		Key:   "_id",
+		Value: userID,
+	}},
+		bson.M{"$addToSet": bson.M{
+			"reports": reportID,
+		}},
+	)
 
 	if err != nil {
 		return err

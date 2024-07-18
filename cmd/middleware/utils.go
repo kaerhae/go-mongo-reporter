@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"fmt"
+	"errors"
 	"main/cmd/models"
 	"main/configs"
 
@@ -9,33 +9,44 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var secret = []byte(configs.GetSecret())
+func setSecret() ([]byte, error) {
+	var secret = configs.GetSecret()
+	if secret == "" {
+		return nil, errors.New("no secret env set")
+	}
+	return []byte(secret), nil
+}
 
-func Authenticate() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		auth := ctx.GetHeader("Authorization")
-		fmt.Println(auth)
-		if auth == "" {
-			ctx.AbortWithStatusJSON(401, gin.H{"message": "401 Unauthorized"})
-			return
-		}
+func Authenticate(c *gin.Context) {
+	auth := c.GetHeader("Authorization")
+	if auth == "" {
+		c.AbortWithStatusJSON(401, gin.H{"message": "401 Unauthorized"})
+		return
+	}
 
-		claims := &models.Claims{}
-		t, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (any, error) {
+	secret, err := setSecret()
+	if err != nil {
+		c.AbortWithStatusJSON(500, gin.H{"message": "internal server error"})
+		return
+	}
+
+	claims := &models.Claims{}
+	token, err := jwt.ParseWithClaims(
+		auth,
+		claims,
+		//nolint:revive
+		func(token *jwt.Token) (any, error) {
 			return secret, nil
 		})
-
-		if err != nil || t == nil {
-			if err == jwt.ErrSignatureInvalid {
-				ctx.AbortWithStatusJSON(400, gin.H{"message": "bad request"})
-				return
-			}
-		}
-
-		if !t.Valid {
-			ctx.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
-			return
-		}
-
+	if err != nil || token == nil {
+		c.AbortWithStatusJSON(400, gin.H{"message": "bad request"})
+		return
 	}
+
+	if !token.Valid {
+		c.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+
+	c.Next()
 }

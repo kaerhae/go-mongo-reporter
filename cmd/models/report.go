@@ -7,4 +7,5 @@ type Report struct {
 	Topic       string             `json:"topic"`
 	Author      string             `json:"author"`
 	Description string             `json:"description"`
+	UserID      string             `bson:"userID"`
 }
