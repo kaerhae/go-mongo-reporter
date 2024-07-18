@@ -5,13 +5,14 @@ import (
 )
 
 type User struct {
-	ID           primitive.ObjectID `bson:"_id"`
-	Username     string             `bson:"username"`
-	Email        string             `bson:"email"`
-	PasswordHash string             `bson:"password_hash"`
-	CreatedAt    string             `bson:"created_at"`
-	Token        string             `bson:"token"`
-	AppRole      string             `bson:"app_role"`
+	ID           primitive.ObjectID   `bson:"_id"`
+	Username     string               `bson:"username"`
+	Email        string               `bson:"email"`
+	PasswordHash string               `bson:"password_hash"`
+	CreatedAt    string               `bson:"created_at"`
+	Token        string               `bson:"token"`
+	AppRole      string               `bson:"app_role"`
+	Reports      []primitive.ObjectID `bson:"reports"`
 }
 
 type Role string

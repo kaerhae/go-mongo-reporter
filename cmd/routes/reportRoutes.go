@@ -1,16 +1,150 @@
 package routes
 
 import (
+	"fmt"
+	"main/cmd/models"
 	"main/cmd/services"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetReports(c *gin.Context) {
-	reports, err := services.GetReportsCollection()
+type ReportRouter interface {
+	Get(*gin.Context)
+	GetByID(*gin.Context)
+	Post(*gin.Context)
+	Update(*gin.Context)
+	Delete(*gin.Context)
+}
+
+type reportRouter struct {
+	Service services.ReportService
+}
+
+func NewReportRouter(service services.ReportService) ReportRouter {
+	return &reportRouter{Service: service}
+}
+
+// Get implements ReportRouter.
+func (r *reportRouter) Get(c *gin.Context) {
+	reports, err := r.Service.GetAllReports()
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err)
+		c.IndentedJSON(500, gin.H{"message": fmt.Sprintf("Internal server error: %v", err)})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, reports)
+
+	c.IndentedJSON(200, reports)
+}
+
+// GetById implements ReportRouter.
+func (r *reportRouter) GetByID(c *gin.Context) {
+	id := c.Param("id")
+	report, err := r.Service.GetSingleReport(id)
+	if err != nil {
+		c.IndentedJSON(400, gin.H{"message": "Error"})
+		return
+	}
+
+	c.IndentedJSON(200, report)
+}
+
+// Post implements ReportRouter.
+func (r *reportRouter) Post(c *gin.Context) {
+	var body models.Report
+	err := c.BindJSON(&body)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"message": "Internal server error"})
+		return
+	}
+
+	if body.UserID == "" {
+		c.AbortWithStatusJSON(400, gin.H{"message": "No userID found on request"})
+		return
+	}
+
+	reportID := primitive.NewObjectID()
+	userID, err := convertStringToPrimitiveID(body.UserID)
+	if err != nil {
+		fmt.Print(err)
+		c.AbortWithStatusJSON(500, gin.H{"message": "internal server error"})
+		return
+	}
+	newReport := models.Report{
+		ID:          reportID,
+		Author:      body.Author,
+		Topic:       body.Topic,
+		Description: body.Description,
+		UserID:      body.UserID,
+	}
+	id, err := r.Service.CreateReport(newReport)
+	if err != nil {
+		c.IndentedJSON(400, "error on creating report")
+		return
+	}
+
+	fmt.Print("Succesfully created report with ID: ", id)
+
+	// Since MongoDB is document db, this function takes care of linking report to user
+	err = r.Service.UpdateReportReferences(userID, reportID)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"message": "error on updating user report references"})
+		return
+	}
+
+	c.IndentedJSON(200, gin.H{"message": "Report was succesfully created"})
+}
+
+// Update implements ReportRouter.
+func (r *reportRouter) Update(c *gin.Context) {
+	id := c.Param("id")
+	var body models.Report
+	err := c.BindJSON(&body)
+	if err != nil {
+		c.IndentedJSON(400, gin.H{"message": "error on parsing request body"})
+		return
+	}
+
+	existingReport, err := r.Service.GetSingleReport(id)
+	if err != nil {
+		c.IndentedJSON(400, gin.H{"message": "No user found"})
+		return
+	}
+
+	newReport := models.Report{
+		ID:          existingReport.ID,
+		Author:      body.Author,
+		Topic:       body.Topic,
+		Description: body.Description,
+		UserID:      existingReport.UserID,
+	}
+	err = r.Service.UpdateReport(newReport)
+	if err != nil {
+		c.IndentedJSON(400, gin.H{"message": fmt.Sprintf("Internal server error: %v", err)})
+		return
+	}
+
+	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully updated", body.Topic))
+}
+
+// Delete implements ReportRouter.
+func (r *reportRouter) Delete(c *gin.Context) {
+	id := c.Param("id")
+
+	count, err := r.Service.DeleteReport(id)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"message": "Internal server error"})
+		return
+	}
+
+	fmt.Print("Deleted count: ", count)
+
+	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully deleted", id))
+}
+
+func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return primitive.ObjectID{}, err
+	}
+	return objID, nil
 }

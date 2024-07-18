@@ -4,6 +4,7 @@ import (
 	"main/cmd/helpers"
 	"main/cmd/models"
 	"main/cmd/services"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,4 +52,24 @@ func TestRoleDeterminationShouldRetunUndefined(t *testing.T) {
 	if err == nil || g != models.Undefined {
 		t.Fail()
 	}
+}
+
+func TestTokenCreation(t *testing.T) {
+	os.Setenv("SECRET_KEY", "123")
+	user := models.User{
+		Username: "tester",
+	}
+
+	repo := helpers.InitMockRepository()
+	s := services.NewUserService(repo)
+
+	claims, err := s.CreateToken(user)
+	if err != nil {
+		t.Fail()
+	}
+	assert.Equal(t, user.Username, claims.Username)
+	assert.Equal(t, user.AppRole, claims.AppRole)
+	assert.NotEmpty(t, claims.Token)
+
+	os.Unsetenv("SECRET_KEY")
 }
