@@ -69,6 +69,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		PasswordHash: hash,
 		CreatedAt:    time.Now().UTC().String(),
 		AppRole:      string(role),
+		Reports:      []primitive.ObjectID{},
 	}
 
 	userID, err := u.Service.CreateUser(newUser)
