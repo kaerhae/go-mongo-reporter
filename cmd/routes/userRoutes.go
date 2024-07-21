@@ -35,7 +35,6 @@ func NewUserHandler(service services.UserService, logger middleware.Logger) User
 // POST /users
 func (u *userRouter) PostNewUser(c *gin.Context) {
 	var body models.User
-	fmt.Println("BINDAUS")
 	/* Bindataan request body muuttujaan body */
 	if err := c.BindJSON(&body); err != nil {
 		u.Logger.LogError(
@@ -44,18 +43,15 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, "Error in handling request")
 		return
 	}
-	fmt.Println("CHEKSAUS")
 
 	_, err := u.Service.CheckExistingUser(body.Username)
 
 	/* Tarkistetaan löytyykö käyttäjää ennestään */
 	if err == nil {
-		fmt.Println("SEKÖ MUKA LÖYTYY")
 
 		c.IndentedJSON(http.StatusBadRequest, "Username already exists")
 		return
 	}
-	fmt.Println("VALIDOINTI")
 
 	if validationErr := validate.Struct(&body); validationErr != nil {
 		u.Logger.LogError(
@@ -64,7 +60,6 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, "Malformatted body")
 		return
 	}
-	fmt.Println("ROOLI")
 
 	role, err := u.Service.DetermineRole(string(body.AppRole))
 	if err != nil {
@@ -74,7 +69,6 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, "Malformatted role")
 		return
 	}
-	fmt.Println("HASH")
 
 	hash, err := u.Service.HashPwd(body.PasswordHash)
 	if err != nil {
