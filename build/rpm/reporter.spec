@@ -23,8 +23,8 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p %{buildroot}/etc/opt/reporter/config
 mkdir -p %{buildroot}/usr/local/bin
 mkdir -p %{buildroot}/etc/systemd/system
-cp reporter %{buildroot}/usr/local/bin
-cp reporter.service %{buildroot}/etc/systemd/system
+install -Dpm 0755 reporter %{buildroot}/usr/local/bin
+install -Dpm 644 reporter.service %{buildroot}/etc/systemd/system
 
 
 %files
