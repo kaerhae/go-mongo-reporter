@@ -13,7 +13,7 @@ import (
 
 func initUserService() services.UserService {
 	repo := helpers.InitMockRepository()
-	return services.NewUserService(repo, middleware.NewSyslogger())
+	return services.NewUserService(repo, middleware.NewSyslogger(false))
 }
 
 func TestRegistrationShouldReturnId(t *testing.T) {
