@@ -36,6 +36,8 @@ cp ../reporter.service $DEBPACKAGE/etc/systemd/system
 cp -r ../build/deb/DEBIAN $DEBPACKAGE
 
 dpkg --build $DEBPACKAGE
+if [ $? -ne 0 ]; then { echo "Build failed, aborting." ; exit 1; } fi
+
 echo ""
 echo "-------READING .deb PACKAGE INFO----------"
 dpkg --info $DEBPACKAGE.deb
@@ -54,3 +56,8 @@ rm -rf usr/local/bin
 rm -rf etc/systemd/system
 rm -rf etc/opt/reporter/config
 rm reporter
+cd ../build/generated-packages
+
+echo ""
+echo "Build succesful, new DEB package created to: $PWD"
+echo ""

@@ -21,6 +21,6 @@
 go.work
 
 scripts/go*
-scripts/reporter
+reporter
 
 build/generated-packages/*
