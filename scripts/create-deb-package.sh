@@ -11,15 +11,18 @@ if [[ -z "$BUILD_NUMBER" ]]; then
     exit 1
 fi
 
+# TEST
+go test -v ../...
 
+# BUILD
 export CGO_ENABLED=0
 export GOARCH=amd64
 export GOOS=linux
 
 go build -o reporter ../.
 
+# DEB
 ARCH=amd64
-
 DEBPACKAGE=reporter_${VERSION}-${BUILD_NUMBER}_${ARCH}
 mkdir -p $DEBPACKAGE
 
@@ -42,6 +45,9 @@ dpkg --contents $DEBPACKAGE.deb
 
 mkdir -p ../build/generated-packages
 mv -f $DEBPACKAGE.deb ../build/generated-packages
+
+
+# CLEANUP
 
 rm -rf $DEBPACKAGE
 rm -rf usr/local/bin

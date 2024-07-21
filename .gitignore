@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+scripts/go*
+scripts/reporter
+
+build/generated-packages/*
