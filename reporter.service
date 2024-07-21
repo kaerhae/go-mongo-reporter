@@ -1,0 +1,10 @@
+[Unit]
+Description=Reporter service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/opt/reporter/config/reporter.env
+ExecStart=/usr/local/bin/reporter
+
+[Install]
+WantedBy=multi-user.target

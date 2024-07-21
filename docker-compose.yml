@@ -2,7 +2,21 @@
 version: '3.1'
 
 services:
-
+  reporter:
+    build: .
+    restart: always
+    ports:
+      - 9000:9000
+    environment:
+      - IP_ADDR=0.0.0.0
+      - PORT=9000
+      - DATABASE_URI=mongodb://root:example@mongo:27017/
+      - SECRET_KEY=1234
+      - DATABASE=reporter
+    depends_on:
+      - mongo
+    networks:
+      - reporternet
   mongo:
     image: mongo
     restart: always
@@ -11,6 +25,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: reporter
+    networks:
+      - reporternet
 
   mongo-express:
     image: mongo-express
@@ -21,3 +38,9 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    networks:
+      - reporternet
+
+networks:
+  reporternet:
+    driver: bridge

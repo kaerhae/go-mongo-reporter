@@ -11,5 +11,5 @@ import (
 
 func main() {
 	router := routes.SetupRouter()
-	log.Fatal(router.Run(fmt.Sprintf("localhost:%s", configs.GetPort())))
+	log.Fatal(router.Run(fmt.Sprintf("%s:%s", configs.GetAddress(), configs.GetPort())))
 }

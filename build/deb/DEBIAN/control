@@ -1,0 +1,7 @@
+Package: go-mongo-reporter
+Version: 0.0.1
+Maintainer: example <example@example.com>
+Build-Depends: debhelper (>= 7.0.50~), golang-stable
+Architecture: amd64
+Homepage: http://example.com
+Description: Reporter server written in Go
