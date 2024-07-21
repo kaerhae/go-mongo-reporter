@@ -25,6 +25,9 @@ export BUILD_VERSION=x
 cd scripts && ./create-deb-package.sh
 ```
 
+Alternatively, build can be done with Makefile command:
+`make build-deb`
+
 To install package, run:
 `apt-get install /path/to/package.deb`
 
@@ -35,6 +38,8 @@ export VERSION=x.x.x
 export BUILD_VERSION=x
 cd scripts && ./create-rpm-package.sh
 ```
+Alternatively, build can be done with Makefile command:
+`make build-rpm`
 
 To install package, run:
 `dnf install /path/to/package.rpm`
