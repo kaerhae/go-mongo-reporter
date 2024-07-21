@@ -11,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(logger middleware.Logger) *gin.Engine {
 	_, db, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
 		log.Fatal("Error on init db")
 	}
 	defer cancel()
-	logger := middleware.NewSyslogger()
+
 	userRepo := repository.NewUserRepository(db, logger)
 	userService := services.NewUserService(userRepo, logger)
 	userHandler := NewUserHandler(userService, logger)

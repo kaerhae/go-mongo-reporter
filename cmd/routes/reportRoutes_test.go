@@ -54,7 +54,7 @@ func TestGetAllReports(t *testing.T) {
 	r := gin.Default()
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 	r.GET("/api/reports", reportHandler.Get)
 	w := httptest.NewRecorder()
@@ -73,7 +73,7 @@ func TestGetSingleReport(t *testing.T) {
 	r := gin.Default()
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 	r.GET("/api/reports/123", reportHandler.GetByID)
 	w := httptest.NewRecorder()
@@ -96,7 +96,7 @@ func TestPostReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
@@ -120,7 +120,7 @@ func TestPostReport_ShouldErrorIfNoUserID(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
@@ -145,7 +145,7 @@ func TestUpdateReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
@@ -170,7 +170,7 @@ func TestDeleteReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	l := middleware.NewSyslogger()
+	l := middleware.NewSyslogger(false)
 	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()

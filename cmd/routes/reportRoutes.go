@@ -130,9 +130,7 @@ func (r *reportRouter) Update(c *gin.Context) {
 
 	existingReport, err := r.Service.GetSingleReport(id)
 	if err != nil {
-		r.Logger.LogInfo(
-			fmt.Sprintf("No user found"),
-		)
+		r.Logger.LogInfo("No user found")
 		c.IndentedJSON(400, gin.H{"message": "No user found"})
 		return
 	}
