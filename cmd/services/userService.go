@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"log"
+	"main/cmd/middleware"
 	"main/cmd/models"
 	"main/cmd/repository"
 	"main/configs"
@@ -23,11 +24,14 @@ type UserService interface {
 
 type userService struct {
 	Repository repository.UserRepository
+	Logger     middleware.Logger
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-
-	return &userService{Repository: repo}
+func NewUserService(repo repository.UserRepository, logger middleware.Logger) UserService {
+	return &userService{
+		Repository: repo,
+		Logger:     logger,
+	}
 }
 
 func (u *userService) CreateUser(user models.User) (string, error) {
@@ -69,7 +73,6 @@ func (u *userService) CheckPassword(hashedPassword string, plainPassword string)
 
 	err := bcrypt.CompareHashAndPassword(byteHashed, bytePlain)
 	if err != nil {
-		log.Println(err)
 		return false
 	}
 

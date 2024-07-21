@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"main/cmd/middleware"
 	"main/cmd/models"
 	"time"
 
@@ -21,10 +22,14 @@ type ReportRepository interface {
 
 type reportRepository struct {
 	Client *mongo.Database
+	Logger middleware.Logger
 }
 
-func NewReportRepository(client *mongo.Database) ReportRepository {
-	return &reportRepository{Client: client}
+func NewReportRepository(client *mongo.Database, logger middleware.Logger) ReportRepository {
+	return &reportRepository{
+		Client: client,
+		Logger: logger,
+	}
 }
 
 func (r *reportRepository) Create(report *models.Report) (string, error) {
