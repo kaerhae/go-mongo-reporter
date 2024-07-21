@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"main/cmd/helpers"
+	"main/cmd/middleware"
 	"main/cmd/models"
 	"net/http"
 	"net/http/httptest"
@@ -53,7 +54,8 @@ func TestGetAllReports(t *testing.T) {
 	r := gin.Default()
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 	r.GET("/api/reports", reportHandler.Get)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/api/reports", nil)
@@ -71,7 +73,8 @@ func TestGetSingleReport(t *testing.T) {
 	r := gin.Default()
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 	r.GET("/api/reports/123", reportHandler.GetByID)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/api/reports/123", nil)
@@ -93,7 +96,8 @@ func TestPostReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
 	r.POST("/api/reports", reportHandler.Post)
@@ -116,7 +120,8 @@ func TestPostReport_ShouldErrorIfNoUserID(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
 	r.POST("/api/reports", reportHandler.Post)
@@ -140,7 +145,8 @@ func TestUpdateReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
 	r.PUT("/api/reports", reportHandler.Update)
@@ -164,7 +170,8 @@ func TestDeleteReport(t *testing.T) {
 
 	repo := helpers.InitMockReportRepository()
 	s := &MockReportService{Repository: repo}
-	reportHandler := NewReportRouter(s)
+	l := middleware.NewSyslogger()
+	reportHandler := NewReportRouter(s, l)
 
 	r := gin.Default()
 	r.DELETE("/api/reports/123", reportHandler.Delete)

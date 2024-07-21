@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"main/cmd/helpers"
+	"main/cmd/middleware"
 	"main/cmd/models"
 	"main/cmd/services"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 
 type MockUserService struct {
 	Repository helpers.MockUserRepository
+	Logger     middleware.Logger
 }
 
 // CheckExistingUser implements services.UserService.
@@ -76,7 +78,7 @@ func TestPostNewUser(t *testing.T) {
 
 	repo := helpers.InitMockRepository()
 	s := &MockUserService{Repository: repo}
-	handler := NewUserHandler(s)
+	handler := NewUserHandler(s, middleware.NewSyslogger())
 	router := SetUpRouter()
 	router.POST("/signup", handler.PostNewUser)
 	w := httptest.NewRecorder()
@@ -103,8 +105,8 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 	}
 
 	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
-	handler := NewUserHandler(s)
+	s := services.NewUserService(repo, middleware.NewSyslogger())
+	handler := NewUserHandler(s, middleware.NewSyslogger())
 	router := gin.Default()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()
@@ -130,8 +132,8 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	}
 
 	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
-	handler := NewUserHandler(s)
+	s := services.NewUserService(repo, middleware.NewSyslogger())
+	handler := NewUserHandler(s, middleware.NewSyslogger())
 	router := SetUpRouter()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()

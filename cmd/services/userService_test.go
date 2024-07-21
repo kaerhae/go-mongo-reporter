@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"main/cmd/helpers"
+	"main/cmd/middleware"
 	"main/cmd/models"
 	"main/cmd/services"
 	"os"
@@ -9,6 +10,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func initUserService() services.UserService {
+	repo := helpers.InitMockRepository()
+	return services.NewUserService(repo, middleware.NewSyslogger())
+}
 
 func TestRegistrationShouldReturnId(t *testing.T) {
 	newUser := models.User{
@@ -18,8 +24,7 @@ func TestRegistrationShouldReturnId(t *testing.T) {
 		AppRole:      "guest",
 		CreatedAt:    "nil",
 	}
-	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
+	s := initUserService()
 	tUser, err := s.CreateUser(newUser)
 	if err != nil {
 		t.Fail()
@@ -29,8 +34,7 @@ func TestRegistrationShouldReturnId(t *testing.T) {
 }
 
 func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
-	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
+	s := initUserService()
 	g, err := s.DetermineRole("guest")
 	if err != nil {
 		t.Fail()
@@ -46,8 +50,7 @@ func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
 }
 
 func TestRoleDeterminationShouldRetunUndefined(t *testing.T) {
-	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
+	s := initUserService()
 	g, err := s.DetermineRole("other")
 	if err == nil || g != models.Undefined {
 		t.Fail()
@@ -60,8 +63,7 @@ func TestTokenCreation(t *testing.T) {
 		Username: "tester",
 	}
 
-	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo)
+	s := initUserService()
 
 	claims, err := s.CreateToken(user)
 	if err != nil {
