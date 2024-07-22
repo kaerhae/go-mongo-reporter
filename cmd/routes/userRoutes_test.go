@@ -78,7 +78,7 @@ func TestPostNewUser(t *testing.T) {
 
 	repo := helpers.InitMockRepository()
 	s := &MockUserService{Repository: repo}
-	handler := NewUserHandler(s, middleware.NewSyslogger())
+	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()
 	router.POST("/signup", handler.PostNewUser)
 	w := httptest.NewRecorder()
@@ -105,8 +105,8 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 	}
 
 	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo, middleware.NewSyslogger())
-	handler := NewUserHandler(s, middleware.NewSyslogger())
+	s := services.NewUserService(repo, middleware.NewSyslogger(false))
+	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := gin.Default()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()
@@ -132,8 +132,8 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	}
 
 	repo := helpers.InitMockRepository()
-	s := services.NewUserService(repo, middleware.NewSyslogger())
-	handler := NewUserHandler(s, middleware.NewSyslogger())
+	s := services.NewUserService(repo, middleware.NewSyslogger(false))
+	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()
 	router.POST("/login", handler.LoginUser)
 	w := httptest.NewRecorder()
