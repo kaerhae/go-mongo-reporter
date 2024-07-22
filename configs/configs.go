@@ -1,11 +1,17 @@
 package configs
 
 import (
+	"fmt"
 	"os"
 )
 
 func GetMongoURI() string {
-	return os.Getenv("DATABASE_URI")
+	user := os.Getenv("MONGO_USER")
+	pass := os.Getenv("MONGO_PASS")
+	ip_addr := os.Getenv("MONGO_IP")
+	port := os.Getenv("MONGO_PORT")
+	mongo_uri := fmt.Sprintf("mongodb://%s:%s@%s:%s", user, pass, ip_addr, port)
+	return mongo_uri
 }
 
 func GetDBName() string {
