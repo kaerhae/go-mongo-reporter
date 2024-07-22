@@ -19,12 +19,9 @@ spec:
         env:
         - name: PORT
           value: "8080"
-        - name: DATABASE_URI
-          value: mongodb://root:example@172.18.0.3:27017
-        - name: SECRET_KEY
-          value: "1234"
-        - name: DATABASE
-          value: reporter
+        envFrom:
+        - secretRef:
+            name: reporter-secrets
         ports:
           - containerPort: 8080  # Should match the port number that the Go application listens on
         readinessProbe:

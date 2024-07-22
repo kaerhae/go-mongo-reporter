@@ -13,4 +13,4 @@ ENV GIN_MODE=debug
 EXPOSE 8080
 
 # Run
-CMD ["./reporter"]
+CMD ["./reporter -syslog false"]
