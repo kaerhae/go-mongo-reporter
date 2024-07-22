@@ -13,8 +13,11 @@ Environment variables are following:
 ```
 IP_ADDR= 
 PORT=
-DATABASE_URI=
 SECRET_KEY=
+MONGO_USER=
+MONGO_PASS=
+MONGO_IP=
+MONGO_PORT=
 DATABASE=
 ```
 ### Debian
