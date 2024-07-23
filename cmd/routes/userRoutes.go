@@ -35,21 +35,31 @@ func NewUserHandler(service services.UserService, logger middleware.Logger) User
 // POST /users
 func (u *userRouter) PostNewUser(c *gin.Context) {
 	var body models.User
-	/* Bindataan request body muuttujaan body */
 	if err := c.BindJSON(&body); err != nil {
 		u.Logger.LogError(
 			fmt.Sprintf("Error happened while binding JSON: %v", err),
 		)
-		c.IndentedJSON(http.StatusBadRequest, "Error in handling request")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Error in handling request",
+		})
+		return
+	}
+
+	if body.Username == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Username is missing",
+		})
 		return
 	}
 
 	_, err := u.Service.CheckExistingUser(body.Username)
 
-	/* Tarkistetaan löytyykö käyttäjää ennestään */
+	// check if user exists already
 	if err == nil {
 
-		c.IndentedJSON(http.StatusBadRequest, "Username already exists")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Username already exists",
+		})
 		return
 	}
 
@@ -57,7 +67,9 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		u.Logger.LogError(
 			fmt.Sprintf("Error happened while validating body: %v", err),
 		)
-		c.IndentedJSON(http.StatusBadRequest, "Malformatted body")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Malformatted body",
+		})
 		return
 	}
 
@@ -66,7 +78,9 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		u.Logger.LogError(
 			fmt.Sprintf("Malformatted appRole: %v", err),
 		)
-		c.IndentedJSON(http.StatusBadRequest, "Malformatted role")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Malformatted role",
+		})
 		return
 	}
 
@@ -75,7 +89,9 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		u.Logger.LogError(
 			fmt.Sprintf("Error happened while hashing password: %v", err),
 		)
-		c.IndentedJSON(500, "Server failed")
+		c.IndentedJSON(500, gin.H{
+			"message": "Server failed",
+		})
 		return
 	}
 
@@ -154,6 +170,7 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 
 	c.IndentedJSON(200, gin.H{
 		"message": "Login succesful",
+		"userID":  existingUser.ID.Hex(),
 		"token":   token.Token,
 	})
 }
