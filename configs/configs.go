@@ -8,10 +8,10 @@ import (
 func GetMongoURI() string {
 	user := os.Getenv("MONGO_USER")
 	pass := os.Getenv("MONGO_PASS")
-	ip_addr := os.Getenv("MONGO_IP")
+	ipAddr := os.Getenv("MONGO_IP")
 	port := os.Getenv("MONGO_PORT")
-	mongo_uri := fmt.Sprintf("mongodb://%s:%s@%s:%s", user, pass, ip_addr, port)
-	return mongo_uri
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s", user, pass, ipAddr, port)
+	return mongoURI
 }
 
 func GetDBName() string {
