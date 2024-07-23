@@ -52,7 +52,9 @@ func (r *reportRouter) GetByID(c *gin.Context) {
 		r.Logger.LogError(
 			fmt.Sprintf("Error happened while fetching single report: %v", err),
 		)
-		c.IndentedJSON(400, gin.H{"message": "Error"})
+		c.IndentedJSON(400, gin.H{
+			"message": fmt.Sprintf("Error: %v", err),
+		})
 		return
 	}
 
@@ -130,8 +132,8 @@ func (r *reportRouter) Update(c *gin.Context) {
 
 	existingReport, err := r.Service.GetSingleReport(id)
 	if err != nil {
-		r.Logger.LogInfo("No user found")
-		c.IndentedJSON(400, gin.H{"message": "No user found"})
+		r.Logger.LogInfo("No report found")
+		c.IndentedJSON(400, gin.H{"message": "No report found"})
 		return
 	}
 
@@ -151,7 +153,9 @@ func (r *reportRouter) Update(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully updated", body.Topic))
+	c.IndentedJSON(200, gin.H{
+		"message": fmt.Sprintf("Report \"%s\" was succesfully updated", body.Topic),
+	})
 }
 
 // Delete implements ReportRouter.
@@ -167,7 +171,9 @@ func (r *reportRouter) Delete(c *gin.Context) {
 		return
 	}
 	r.Logger.LogInfo(fmt.Sprintf("Deleted %d reports", deletedCount))
-	c.IndentedJSON(200, fmt.Sprintf("Report \"%s\" was succesfully deleted", id))
+	c.IndentedJSON(200, gin.H{
+		"message": fmt.Sprintf("Deleted %d reports", deletedCount),
+	})
 }
 
 func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {

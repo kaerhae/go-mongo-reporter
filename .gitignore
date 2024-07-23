@@ -24,3 +24,6 @@ scripts/go*
 reporter
 
 build/generated-packages/*
+tests/robot/venv
+tests/robot/*.html
+tests/robot/*.xml
