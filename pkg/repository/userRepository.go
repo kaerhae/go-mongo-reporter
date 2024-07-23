@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"main/cmd/middleware"
-	"main/cmd/models"
+	"main/pkg/middleware"
+	"main/pkg/models"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"

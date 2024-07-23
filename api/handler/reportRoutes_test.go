@@ -1,10 +1,10 @@
-package routes
+package handler
 
 import (
 	"encoding/json"
-	"main/cmd/helpers"
-	"main/cmd/middleware"
-	"main/cmd/models"
+	"main/pkg/helpers"
+	"main/pkg/middleware"
+	"main/pkg/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"

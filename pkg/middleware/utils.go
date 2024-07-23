@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"errors"
-	"main/cmd/models"
 	"main/configs"
+	"main/pkg/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"

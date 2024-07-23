@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"main/cmd/middleware"
-	"main/cmd/routes"
+	"main/api"
 	"main/configs"
+	"main/pkg/middleware"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -26,6 +26,6 @@ func main() {
 	}
 
 	logger := middleware.NewSyslogger(*useSyslog)
-	router := routes.SetupRouter(logger)
+	router := api.SetupRouter(logger)
 	log.Fatal(router.Run(fmt.Sprintf("%s:%s", configs.GetAddress(), configs.GetPort())))
 }

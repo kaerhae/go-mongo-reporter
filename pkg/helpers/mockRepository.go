@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"log"
-	"main/cmd/models"
+	"main/pkg/models"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"

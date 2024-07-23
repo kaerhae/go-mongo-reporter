@@ -1,10 +1,10 @@
-package routes
+package handler
 
 import (
 	"fmt"
-	"main/cmd/middleware"
-	"main/cmd/models"
-	"main/cmd/services"
+	"main/pkg/middleware"
+	"main/pkg/models"
+	"main/pkg/services"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"

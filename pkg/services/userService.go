@@ -3,10 +3,10 @@ package services
 import (
 	"errors"
 	"log"
-	"main/cmd/middleware"
-	"main/cmd/models"
-	"main/cmd/repository"
 	"main/configs"
+	"main/pkg/middleware"
+	"main/pkg/models"
+	"main/pkg/repository"
 	"time"
 
 	"github.com/golang-jwt/jwt"

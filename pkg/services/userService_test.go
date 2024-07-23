@@ -1,10 +1,10 @@
 package services_test
 
 import (
-	"main/cmd/helpers"
-	"main/cmd/middleware"
-	"main/cmd/models"
-	"main/cmd/services"
+	"main/pkg/helpers"
+	"main/pkg/middleware"
+	"main/pkg/models"
+	"main/pkg/services"
 	"os"
 	"testing"
 

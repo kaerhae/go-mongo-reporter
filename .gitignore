@@ -21,7 +21,8 @@
 go.work
 
 scripts/go*
-reporter
+/reporter
+cmd/reporter/reporter
 
 build/generated-packages/*
 tests/robot/venv

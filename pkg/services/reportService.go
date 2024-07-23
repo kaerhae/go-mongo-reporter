@@ -1,8 +1,8 @@
 package services
 
 import (
-	"main/cmd/models"
-	"main/cmd/repository"
+	"main/pkg/models"
+	"main/pkg/repository"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

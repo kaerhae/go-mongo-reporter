@@ -1,8 +1,8 @@
 package repository_test
 
 import (
-	"main/cmd/helpers"
-	"main/cmd/models"
+	"main/pkg/helpers"
+	"main/pkg/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

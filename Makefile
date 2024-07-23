@@ -3,20 +3,20 @@ BINARY_NAME=reporter
 all: lint test build-linux build-deb build-rpm
 
 build:
-	go build -o ${BINARY_NAME} main.go
+	go build -o ${BINARY_NAME} cmd/reporter/main.go
 
 build-linux:
 	CGO_ENABLED=0 \
 	GOARCH=amd64 \
 	GOOS=linux \
-	go build -o ${BINARY_NAME} main.go
+	go build -o ${BINARY_NAME} cmd/reporter/main.go
 
 run:
-	go build -o ${BINARY_NAME} main.go
+	go build -o ${BINARY_NAME} cmd/reporter/main.go
 	./${BINARY_NAME}
 
 dev:
-	go run .
+	go run cmd/reporter/main.go
 
 test:
 	go test -v ./...

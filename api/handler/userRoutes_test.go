@@ -1,13 +1,13 @@
-package routes
+package handler
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"main/cmd/helpers"
-	"main/cmd/middleware"
-	"main/cmd/models"
-	"main/cmd/services"
+	"main/pkg/helpers"
+	"main/pkg/middleware"
+	"main/pkg/models"
+	"main/pkg/services"
 	"net/http"
 	"net/http/httptest"
 	"os"

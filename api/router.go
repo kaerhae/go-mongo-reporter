@@ -1,12 +1,13 @@
-package routes
+package api
 
 import (
 	"log"
-	"main/cmd/db"
-	"main/cmd/middleware"
-	"main/cmd/repository"
-	"main/cmd/services"
+	"main/api/handler"
 	"main/configs"
+	"main/pkg/db"
+	"main/pkg/middleware"
+	"main/pkg/repository"
+	"main/pkg/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,11 +21,11 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 
 	userRepo := repository.NewUserRepository(db, logger)
 	userService := services.NewUserService(userRepo, logger)
-	userHandler := NewUserHandler(userService, logger)
+	userHandler := handler.NewUserHandler(userService, logger)
 
 	reportRepo := repository.NewReportRepository(db, logger)
 	reportService := services.NewReportService(reportRepo)
-	reportHandler := NewReportRouter(reportService, logger)
+	reportHandler := handler.NewReportRouter(reportService, logger)
 
 	router := gin.Default()
 
