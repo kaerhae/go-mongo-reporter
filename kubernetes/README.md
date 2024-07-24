@@ -13,6 +13,13 @@ kubectl create secret generic mongo-secrets \
 --from-literal=MONGO_INITDB_DATABASE="<REPORTER_DB>"
 ```
 
+MongoDB deployment is by default set to persisted volume in /data/mongodb. To set persistentVolume and persistentVolumeClaim, run:
+```bash
+kubectl apply -f mongo-pv.yml
+kubectl apply -f mongo-pvc.yml
+```
+
+
 Then run deploy:
 ```bash
 kubectl apply -f mongo-deployment.yml

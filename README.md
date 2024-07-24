@@ -3,6 +3,22 @@ Simple Reporting Tool.
 
 Backend designed to use MongoDB. Backend written in Golang.
 
+## Project structure
+
+go-mongo-reporter/
+├─ api
+|├─
+├─ bin
+│  ├─ favicon.ico
+│  ├─ index.html
+│  ├─ robots.txt
+├─ src/
+│  ├─ index.css
+│  ├─ index.js
+├─ .gitignore
+├─ package.json
+├─ README.md
+
 ## Build and Installation
 
 Reporter always needs .env file to launch. In development, .env file can be located to the project root. For Debian/Fedora packages, environment file should be located on 
@@ -53,3 +69,12 @@ To install package, run:
 To remov package, run:
 `dnf remove reporter`
 
+
+### Docker
+
+Repository contains docker-compose.yml, which builds database and reporter service with initial migrations. Before running, check ./docker-compose.yml file and configure suitable environment variables. To compose dockerfiles, run:
+`docker-compose up -d`
+
+### Kubernetes
+
+This project has deployment files to Kubernetes, which are tested on a local Minikube environment. For further instructions, read more [here](kubernetes/README.md)
