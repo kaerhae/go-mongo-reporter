@@ -4,6 +4,12 @@ This directory contains deployments for reporter tool and MongoDB. To make these
 
 Note: Before reporter deployment, built kaerhae/go-mongo-reporter image must be pushed to registry, so it can be fetched. If using `minikube`, image can be loaded to minikube with: `minikube image load kaerhae/go-mongo-reporter`
 
+To build images, run:
+```bash
+docker build -t kaerhae/go-mongo-reporter -f ./docker/reporter/Dockerfile .
+docker build -t kaerhae/go-mongo-reporter-migration -f ./docker/migrate/Dockerfile .
+```
+
 ## Deploy MongoDB
 To set `mongo-secrets`, run following command with suitable parameters:
 ```bash
@@ -31,7 +37,9 @@ kubectl create secret generic reporter-secrets \
 --from-literal=MONGO_IP='<IP_ADDR' \
 --from-literal=MONGO_PORT="<PORT>" \
 --from-literal=SECRET_KEY="<SECRET_KEY>" \
---from-literal=DATABASE="<REPORTER_DB>"
+--from-literal=DATABASE="<REPORTER_DB>" \
+--from-literal=REPORTER_ROOT_USER="<ADMIN_USER>" \
+--from-literal=REPORTER_ROOT_PASSWORD="<ADMIN_PASSWD>" \
 ```
 
 Note: MONGO_IP can be retrieved with `kubectl describe pod <MONGO_POD_NAME> | grep 'IP'`
