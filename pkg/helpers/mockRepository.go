@@ -74,6 +74,7 @@ type MockUserRepository interface {
 	Create(user *models.User) (string, error)
 	GetSingleUser(username string) (models.User, error)
 	UpdateUser(newUser models.User) error
+	DeleteSingleUser(ID primitive.ObjectID) (int64, error)
 }
 
 func InitMockRepository() MockUserRepository {
@@ -98,7 +99,8 @@ func (m *mockUserRepository) GetSingleUser(username string) (models.User, error)
 	}, nil
 }
 
-func (m *mockUserRepository) UpdateUser(_ models.User) error { return nil }
+func (m *mockUserRepository) UpdateUser(_ models.User) error                       { return nil }
+func (m *mockUserRepository) DeleteSingleUser(_ primitive.ObjectID) (int64, error) { return 1, nil }
 
 func TestingEnvHashPwd(pass string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(

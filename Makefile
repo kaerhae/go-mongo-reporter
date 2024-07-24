@@ -1,4 +1,5 @@
 BINARY_NAME=reporter
+MIGRATE_BINARY_NAME=migrate
 
 all: lint test build-linux build-deb build-rpm
 
@@ -10,6 +11,9 @@ build-linux:
 	GOARCH=amd64 \
 	GOOS=linux \
 	go build -o ${BINARY_NAME} cmd/reporter/main.go
+
+build-migrate:
+	go build -o ${MIGRATE_BINARY_NAME} cmd/migrate/main.go
 
 run:
 	go build -o ${BINARY_NAME} cmd/reporter/main.go

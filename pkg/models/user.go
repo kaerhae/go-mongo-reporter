@@ -24,3 +24,15 @@ const (
 	Guest      Role = "guest"
 	Undefined  Role = ""
 )
+
+type CreateUser struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	AppRole  string `json:"appRole"`
+}
+
+type LoginUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

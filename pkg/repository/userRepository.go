@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"main/pkg/middleware"
 	"main/pkg/models"
 	"time"
 
@@ -14,17 +13,16 @@ import (
 type UserRepository interface {
 	Create(user *models.User) (string, error)
 	GetSingleUser(username string) (models.User, error)
+	DeleteSingleUser(ID primitive.ObjectID) (int64, error)
 }
 
 type userRepository struct {
 	Client *mongo.Database
-	Logger middleware.Logger
 }
 
-func NewUserRepository(client *mongo.Database, logger middleware.Logger) UserRepository {
+func NewUserRepository(client *mongo.Database) UserRepository {
 	return &userRepository{
 		Client: client,
-		Logger: logger,
 	}
 }
 
@@ -56,4 +54,21 @@ func (r *userRepository) GetSingleUser(username string) (models.User, error) {
 	}
 
 	return result, nil
+}
+
+func (r *userRepository) DeleteSingleUser(id primitive.ObjectID) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	collection := r.Client.Collection("users")
+
+	deleteCount, err := collection.DeleteOne(ctx, bson.D{{
+		Key:   "_id",
+		Value: id,
+	}})
+	if err != nil {
+		return 0, err
+	}
+
+	return deleteCount.DeletedCount, nil
 }

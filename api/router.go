@@ -15,11 +15,11 @@ import (
 func SetupRouter(logger middleware.Logger) *gin.Engine {
 	_, db, cancel, err := db.MongoConnect(configs.GetMongoURI())
 	if err != nil {
-		log.Fatal("Error on init db")
+		log.Fatal("Error on init db", err)
 	}
 	defer cancel()
 
-	userRepo := repository.NewUserRepository(db, logger)
+	userRepo := repository.NewUserRepository(db)
 	userService := services.NewUserService(userRepo, logger)
 	userHandler := handler.NewUserHandler(userService, logger)
 

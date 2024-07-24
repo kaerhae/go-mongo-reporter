@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"main/configs"
 	"time"
 
@@ -14,10 +13,14 @@ import (
 
 func MongoConnect(uri string) (context.Context, *mongo.Database, context.CancelFunc, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-
+	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		log.Fatal("error on connecting db: ", err)
+		return nil, nil, nil, err
+	}
+	err = MongoPing(ctx, client)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 	return ctx, client.Database(configs.GetDBName()), cancel, err
 }

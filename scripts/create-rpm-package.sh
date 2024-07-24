@@ -22,12 +22,12 @@ export CGO_ENABLED=0
 export GOARCH=amd64
 export GOOS=linux
 
-go build -o ../cmd/reporter/reporter ../cmd/reporter/main.go
+go build -o ../bin/reporter/reporter ../cmd/reporter/main.go
 
 # RPM PACKAGE
-RPMPACKAGE=go-mongo-reporter-${VERSION}
+RPMPACKAGE=reporter-${VERSION}
 mkdir -p $RPMPACKAGE
-cp ../cmd/reporter/reporter $RPMPACKAGE
+cp ../bin/reporter/reporter $RPMPACKAGE
 cp ../reporter.service $RPMPACKAGE
 tar -cvzf $RPMPACKAGE.tar.gz $RPMPACKAGE/
 
@@ -39,7 +39,7 @@ if [ $? -ne 0 ]; then { echo "Build failed, aborting." ; exit 1; } fi
 
 cp ~/rpmbuild/RPMS/x86_64/$RPMPACKAGE-$BUILD_NUMBER.el9.x86_64.rpm ../build/generated-packages
 # CLEANUP
-rm ../cmd/reporter/reporter
+rm ../bin/reporter/reporter
 rm -rf $RPMPACKAGE 
 rm $RPMPACKAGE.tar.gz
 

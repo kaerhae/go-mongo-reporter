@@ -5,6 +5,7 @@ import (
 	"main/pkg/middleware"
 	"main/pkg/models"
 	"main/pkg/services"
+	"main/pkg/utils"
 	"net/http"
 	"time"
 
@@ -34,7 +35,7 @@ func NewUserHandler(service services.UserService, logger middleware.Logger) User
 
 // POST /users
 func (u *userRouter) PostNewUser(c *gin.Context) {
-	var body models.User
+	var body models.CreateUser
 	if err := c.BindJSON(&body); err != nil {
 		u.Logger.LogError(
 			fmt.Sprintf("Error happened while binding JSON: %v", err),
@@ -45,9 +46,10 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		return
 	}
 
-	if body.Username == "" {
+	if body.Username == "" || body.Password == "" || body.Email == "" {
+		u.Logger.LogError(fmt.Sprintf("Malformatted body: %v\n", body))
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"message": "Username is missing",
+			"message": "Malformatted body",
 		})
 		return
 	}
@@ -72,7 +74,6 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		})
 		return
 	}
-
 	role, err := u.Service.DetermineRole(string(body.AppRole))
 	if err != nil {
 		u.Logger.LogError(
@@ -83,8 +84,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		})
 		return
 	}
-
-	hash, err := u.Service.HashPwd(body.PasswordHash)
+	hash, err := utils.HashPwd(body.Password)
 	if err != nil {
 		u.Logger.LogError(
 			fmt.Sprintf("Error happened while hashing password: %v", err),
@@ -113,6 +113,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		c.IndentedJSON(500, gin.H{
 			"message": "Internal server error",
 		})
+		return
 	}
 
 	u.Logger.LogInfo(
@@ -125,7 +126,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 
 // POST /login
 func (u *userRouter) LoginUser(c *gin.Context) {
-	var body models.User
+	var body models.LoginUser
 
 	if err := c.BindJSON(&body); err != nil {
 		u.Logger.LogError(
@@ -133,6 +134,14 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 		)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"message": "Error in handling request",
+		})
+		return
+	}
+
+	if body.Username == "" || body.Password == "" {
+		u.Logger.LogError("Malformatted body")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Malformatted body",
 		})
 		return
 	}
@@ -146,17 +155,17 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 		return
 	}
 
-	isCorrectPassword := u.Service.CheckPassword(existingUser.PasswordHash, body.PasswordHash)
+	err = utils.CheckPassword(existingUser.PasswordHash, body.Password)
 
-	if !isCorrectPassword {
-		u.Logger.LogInfo("Incorrect password")
+	if err != nil {
+		u.Logger.LogInfo(fmt.Sprintf("Error while checking password: %v", err))
 		c.IndentedJSON(401, gin.H{
 			"message": "Incorrect password",
 		})
 		return
 	}
 
-	token, err := u.Service.CreateToken(existingUser)
+	token, err := utils.CreateToken(existingUser)
 
 	if err != nil {
 		u.Logger.LogError(

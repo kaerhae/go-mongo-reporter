@@ -14,7 +14,7 @@ ${URL}     http://${HOST}:${PORT}
 Test Signup
     [Documentation]    Test signup route handler
     Create Reporter Session
-    ${data}=    Create Dictionary    username=robot1    email=robot@test.com    password=1234    appRole=admin
+    ${data}=    Create Dictionary    username=robot    email=robot@test.com    password=1234    appRole=admin
     ${response}=    POST On Session    reporter-session    /signup    json=${data}    expected_status=anything
     IF    ${response.status_code} == 400
         Assert Signup With Existing Username    ${response.json()}
@@ -30,13 +30,13 @@ Test Signup with Missing Username
     Log    RESPONSE IS : ${response.json()}    console=yes
     Status Should Be    400
     Dictionary Should Contain Key    ${response.json()}    message
-    Should Be Equal As Strings    ${response.json()}[message]    Username is missing   
+    Should Be Equal As Strings    ${response.json()}[message]    Malformatted body   
 
 
 Test Signup with Malformatted AppRole
     [Documentation]    Test signup route handler. Should return error code and message.
     Create Reporter Session
-    ${data}=    Create Dictionary    username=robot-appRole-tester    appRole=wrong
+    ${data}=    Create Dictionary    username=robot-role-tester    password=blaah    email=robot@test.com   appRole=wrong
     ${response}=    POST On Session    reporter-session    /signup    json=${data}    expected_status=any
     Status Should Be    400
     Dictionary Should Contain Key    ${response.json()}    message
@@ -63,6 +63,14 @@ Test Unsuccessful Login
     Dictionary Should Contain Key    ${response.json()}    message
     Should Be Equal As Strings    No user found    ${response.json()}[message]
 
+Test Unsuccessful Login with Empty Password
+    [Documentation]    Test login route handler. Test should return unsuccessful code and message, because empty password is not allowed
+    Create Reporter Session
+    ${data}=    Create Dictionary    username=    password=
+    ${response}=    POST On Session    reporter-session    /login    json=${data}    expected_status=anything
+    Status Should Be    400
+    Dictionary Should Contain Key    ${response.json()}    message
+    Should Be Equal    Malformatted body    ${response.json()}[message]
 
 *** Keywords ***
 Create Reporter Session

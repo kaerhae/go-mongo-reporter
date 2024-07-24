@@ -19,7 +19,7 @@ export CGO_ENABLED=0
 export GOARCH=amd64
 export GOOS=linux
 
-go build -o ../cmd/reporter/reporter ../cmd/reporter/main.go
+go build -o ../bin/reporter/reporter ../cmd/reporter/main.go
 
 # DEB
 ARCH=amd64
@@ -31,7 +31,7 @@ mkdir -p $DEBPACKAGE/etc/systemd/system
 mkdir -p $DEBPACKAGE/etc/opt/reporter/config
 
 
-cp ../cmd/reporter/reporter $DEBPACKAGE/usr/local/bin
+cp ../bin/reporter/reporter $DEBPACKAGE/usr/local/bin
 cp ../reporter.service $DEBPACKAGE/etc/systemd/system
 cp -r ../build/deb/DEBIAN $DEBPACKAGE
 
@@ -55,7 +55,7 @@ rm -rf $DEBPACKAGE
 rm -rf usr/local/bin
 rm -rf etc/systemd/system
 rm -rf etc/opt/reporter/config
-rm ../cmd/reporter/reporter
+rm ../bin/reporter/reporter
 cd ../build/generated-packages
 
 echo ""

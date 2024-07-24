@@ -68,12 +68,11 @@ func SetUpRouter() *gin.Engine {
 }
 
 func TestPostNewUser(t *testing.T) {
-	newUser := models.User{
-		Username:     "testerUser",
-		Email:        "test@test.com",
-		PasswordHash: "passhash",
-		AppRole:      "guest",
-		CreatedAt:    "nil",
+	newUser := models.CreateUser{
+		Username: "testerUser",
+		Email:    "test@test.com",
+		Password: "passhash",
+		AppRole:  "guest",
 	}
 
 	repo := helpers.InitMockRepository()
@@ -99,9 +98,9 @@ func TestPostNewUser(t *testing.T) {
 func TestLoginUserShouldBeSuccess(t *testing.T) {
 	os.Setenv("DATABASE_URI", "test")
 	/* This test is going to compare user object password to object that MockUserRepository GetSingleUser retrieves */
-	user := models.User{
-		Username:     "testerUser",
-		PasswordHash: "strong-password",
+	user := models.LoginUser{
+		Username: "testerUser",
+		Password: "strong-password",
 	}
 
 	repo := helpers.InitMockRepository()
@@ -126,9 +125,9 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 
 func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	/* This test is going to compare user object password to object that MockUserRepository GetSingleUser retrieves */
-	user := models.User{
-		Username:     "testerUser",
-		PasswordHash: "weak-wrong-password",
+	user := models.LoginUser{
+		Username: "testerUser",
+		Password: "weak-wrong-password",
 	}
 
 	repo := helpers.InitMockRepository()

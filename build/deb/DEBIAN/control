@@ -1,4 +1,4 @@
-Package: go-mongo-reporter
+Package: reporter
 Version: 0.0.1
 Maintainer: example <example@example.com>
 Build-Depends: debhelper (>= 7.0.50~), golang-stable
