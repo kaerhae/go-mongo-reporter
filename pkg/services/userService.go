@@ -30,13 +30,7 @@ func (u *userService) CreateUser(user models.User) (string, error) {
 }
 
 func (u *userService) CheckExistingUser(username string) (models.User, error) {
-	r := u.Repository
-	user, err := r.GetSingleUser(username)
-	if err != nil {
-		return models.User{}, err
-	}
-
-	return user, nil
+	return u.Repository.GetSingleUser(username)
 }
 
 func (u *userService) DetermineRole(role string) (models.Role, error) {

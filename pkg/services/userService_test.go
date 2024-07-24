@@ -42,8 +42,16 @@ func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+	m, err := s.DetermineRole("maintainer")
+	if err != nil {
+		t.Fail()
+	}
 	c, err := s.DetermineRole("creator")
-	if err != nil || g != models.Guest || a != models.Admin || c != models.Creator {
+	if err != nil {
+		t.Fail()
+	}
+
+	if g != models.Guest || a != models.Admin || c != models.Creator || m != models.Maintainer {
 		t.Fail()
 	}
 }
