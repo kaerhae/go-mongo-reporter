@@ -29,3 +29,11 @@ func GetAddress() string {
 func GetPort() string {
 	return os.Getenv("PORT")
 }
+
+func GetReporterRootUsername() string {
+	return os.Getenv("REPORTER_ROOT_USER")
+}
+
+func GetReporterRootPass() string {
+	return os.Getenv("REPORTER_ROOT_PASSWORD")
+}

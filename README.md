@@ -32,7 +32,10 @@ Alternatively, build can be done with Makefile command:
 `make build-deb`
 
 To install package, run:
-`apt-get install /path/to/package.deb`
+`dpkg -i /path/to/package.deb`
+
+To remove package, run:
+`apt remove reporter`
 
 ### Fedora
 .rpm package can be created locally with:
@@ -46,4 +49,7 @@ Alternatively, build can be done with Makefile command:
 
 To install package, run:
 `dnf install /path/to/package.rpm`
+
+To remov package, run:
+`dnf remove reporter`
 
