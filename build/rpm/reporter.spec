@@ -1,4 +1,4 @@
-Name:           go-mongo-reporter
+Name:           reporter
 Version:        {VERSION}
 Release:        {BUILD_NUMBER}%{?dist}
 Summary:        Reporter server written in Go
