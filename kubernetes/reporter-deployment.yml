@@ -12,6 +12,14 @@ spec:
       labels:
         app: go-mongo-reporter 
     spec:
+      initContainers:
+      - name: go-mongo-reporter-migrations
+        image: kaerhae/go-mongo-reporter-migration
+        imagePullPolicy: IfNotPresent
+        command: ["./bin/migrate", "up"]
+        envFrom:
+        - secretRef:
+            name: reporter-secrets
       containers:
       - name: reporter
         image: kaerhae/go-mongo-reporter 
@@ -26,7 +34,7 @@ spec:
           - containerPort: 8080
         readinessProbe:
           tcpSocket:
-            port: 8085
+            port: 8080
           initialDelaySeconds: 15
           periodSeconds: 10
         livenessProbe:
