@@ -11,7 +11,7 @@ type User struct {
 	PasswordHash string               `bson:"password_hash"`
 	CreatedAt    string               `bson:"created_at"`
 	Token        string               `bson:"token"`
-	AppRole      string               `bson:"app_role"`
+	AppRole      Role                 `bson:"app_role"`
 	Reports      []primitive.ObjectID `bson:"reports"`
 }
 

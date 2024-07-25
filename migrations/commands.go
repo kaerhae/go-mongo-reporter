@@ -56,7 +56,7 @@ func createAdminUserUp(adminUser string, adminPass string) {
 		Email:        "",
 		PasswordHash: hashPwd,
 		CreatedAt:    time.Now().UTC().String(),
-		AppRole:      "admin",
+		AppRole:      models.Admin,
 		Reports:      []primitive.ObjectID{},
 	}
 
@@ -71,13 +71,9 @@ func createAdminUserDown() {
 	if err != nil {
 		log.Fatal("Error on connecting MongoDB", err)
 	}
-	adminID, err := primitive.ObjectIDFromHex("000011112222333344445555")
-	if err != nil {
-		log.Fatal("Error while creating ID ", err)
-	}
 
 	r := repository.NewUserRepository(client)
-	deleteCount, err := r.DeleteSingleUser(adminID)
+	deleteCount, err := r.DeleteSingleUser("000011112222333344445555")
 	if err != nil {
 		log.Fatal("Error while deleting admin user: ", err)
 	}

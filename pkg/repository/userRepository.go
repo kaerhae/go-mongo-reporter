@@ -12,18 +12,53 @@ import (
 
 type UserRepository interface {
 	Create(user *models.User) (string, error)
+	Get() ([]models.User, error)
 	GetSingleUser(username string) (models.User, error)
-	DeleteSingleUser(ID primitive.ObjectID) (int64, error)
+	UpdateSingleUser(user models.User) error
+	DeleteSingleUser(ID string) (int64, error)
 }
 
 type userRepository struct {
 	Client *mongo.Database
 }
 
-func NewUserRepository(client *mongo.Database) UserRepository {
-	return &userRepository{
-		Client: client,
+// Get implements UserRepository.
+func (r *userRepository) Get() ([]models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	collection := r.Client.Collection("users")
+	var users []models.User
+
+	cur, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
 	}
+
+	if err = cur.All(context.TODO(), &users); err != nil {
+		panic(err)
+	}
+
+	return users, nil
+}
+
+// UpdateSingleUser implements UserRepository.
+func (r *userRepository) UpdateSingleUser(user models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	collection := r.Client.Collection("users")
+
+	_, err := collection.UpdateOne(ctx, bson.D{{
+		Key:   "_id",
+		Value: user.ID,
+	}}, bson.M{"$set": user})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *userRepository) Create(user *models.User) (string, error) {
@@ -56,7 +91,8 @@ func (r *userRepository) GetSingleUser(username string) (models.User, error) {
 	return result, nil
 }
 
-func (r *userRepository) DeleteSingleUser(id primitive.ObjectID) (int64, error) {
+// DeleteSingleUser implements UserRepository
+func (r *userRepository) DeleteSingleUser(id string) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -71,4 +107,10 @@ func (r *userRepository) DeleteSingleUser(id primitive.ObjectID) (int64, error) 
 	}
 
 	return deleteCount.DeletedCount, nil
+}
+
+func NewUserRepository(client *mongo.Database) UserRepository {
+	return &userRepository{
+		Client: client,
+	}
 }

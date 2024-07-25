@@ -38,6 +38,13 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 		authorizedGroup.PUT("/reports/:id", reportHandler.Update)
 		authorizedGroup.DELETE("/reports/:id", reportHandler.Delete)
 	}
+
+	adminGroup := router.Group("/user-management")
+	adminGroup.Use(middleware.AuthenticateAdmin)
+	{
+		adminGroup.GET("/users", userHandler.Get)
+	}
+
 	router.GET("/", func(ctx *gin.Context) {
 		logger.LogInfo("Server up and running")
 		ctx.String(200, "Server up and running!")

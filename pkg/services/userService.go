@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"main/pkg/middleware"
 	"main/pkg/models"
 	"main/pkg/repository"
@@ -10,7 +9,9 @@ import (
 type UserService interface {
 	CreateUser(user models.User) (string, error)
 	CheckExistingUser(username string) (models.User, error)
-	DetermineRole(role string) (models.Role, error)
+	GetAll() ([]models.User, error)
+	UpdateUser(user models.User) error
+	DeleteUser(id string) (int64, error)
 }
 
 type userService struct {
@@ -25,6 +26,10 @@ func NewUserService(repo repository.UserRepository, logger middleware.Logger) Us
 	}
 }
 
+func (u *userService) GetAll() ([]models.User, error) {
+	return u.Repository.Get()
+}
+
 func (u *userService) CreateUser(user models.User) (string, error) {
 	return u.Repository.Create(&user)
 }
@@ -33,17 +38,10 @@ func (u *userService) CheckExistingUser(username string) (models.User, error) {
 	return u.Repository.GetSingleUser(username)
 }
 
-func (u *userService) DetermineRole(role string) (models.Role, error) {
-	switch role {
-	case "admin":
-		return models.Admin, nil
-	case "maintainer":
-		return models.Maintainer, nil
-	case "creator":
-		return models.Creator, nil
-	case "guest":
-		return models.Guest, nil
-	default:
-		return models.Undefined, errors.New("Role undefined: " + role)
-	}
+func (u *userService) UpdateUser(user models.User) error {
+	return u.Repository.UpdateSingleUser(user)
+}
+
+func (u *userService) DeleteUser(id string) (int64, error) {
+	return u.Repository.DeleteSingleUser(id)
 }

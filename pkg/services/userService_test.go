@@ -11,7 +11,7 @@ import (
 )
 
 func initUserService() services.UserService {
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 	return services.NewUserService(repo, middleware.NewSyslogger(false))
 }
 
@@ -30,36 +30,4 @@ func TestRegistrationShouldReturnId(t *testing.T) {
 	}
 
 	assert.Equal(t, len(tUser), 24)
-}
-
-func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
-	s := initUserService()
-	g, err := s.DetermineRole("guest")
-	if err != nil {
-		t.Fail()
-	}
-	a, err := s.DetermineRole("admin")
-	if err != nil {
-		t.Fail()
-	}
-	m, err := s.DetermineRole("maintainer")
-	if err != nil {
-		t.Fail()
-	}
-	c, err := s.DetermineRole("creator")
-	if err != nil {
-		t.Fail()
-	}
-
-	if g != models.Guest || a != models.Admin || c != models.Creator || m != models.Maintainer {
-		t.Fail()
-	}
-}
-
-func TestRoleDeterminationShouldRetunUndefined(t *testing.T) {
-	s := initUserService()
-	g, err := s.DetermineRole("other")
-	if err == nil || g != models.Undefined {
-		t.Fail()
-	}
 }

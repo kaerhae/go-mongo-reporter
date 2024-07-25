@@ -17,6 +17,7 @@ import (
 type UserRouter interface {
 	PostNewUser(c *gin.Context)
 	LoginUser(c *gin.Context)
+	Get(c *gin.Context)
 }
 
 type userRouter struct {
@@ -74,7 +75,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		})
 		return
 	}
-	role, err := u.Service.DetermineRole(string(body.AppRole))
+	role, err := utils.DetermineRole(string(body.AppRole))
 	if err != nil {
 		u.Logger.LogError(
 			fmt.Sprintf("Malformatted appRole: %v", err),
@@ -101,7 +102,7 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 		Email:        body.Email,
 		PasswordHash: hash,
 		CreatedAt:    time.Now().UTC().String(),
-		AppRole:      string(role),
+		AppRole:      role,
 		Reports:      []primitive.ObjectID{},
 	}
 
@@ -180,6 +181,19 @@ func (u *userRouter) LoginUser(c *gin.Context) {
 	c.IndentedJSON(200, gin.H{
 		"message": "Login succesful",
 		"userID":  existingUser.ID.Hex(),
-		"token":   token.Token,
+		"token":   token,
 	})
+}
+
+func (u *userRouter) Get(c *gin.Context) {
+	users, err := u.Service.GetAll()
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while fetching reports: %v", err),
+		)
+		c.IndentedJSON(500, gin.H{"message": fmt.Sprintf("Internal server error: %v", err)})
+		return
+	}
+
+	c.IndentedJSON(200, users)
 }

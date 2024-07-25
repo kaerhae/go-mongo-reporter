@@ -22,6 +22,10 @@ type MockUserService struct {
 	Logger     middleware.Logger
 }
 
+func (s *MockUserService) GetAll() ([]models.User, error) {
+	return []models.User{}, nil
+}
+
 // CheckExistingUser implements services.UserService.
 func (s *MockUserService) CheckExistingUser(username string) (models.User, error) {
 	return models.User{}, errors.New("")
@@ -40,6 +44,14 @@ func (s *MockUserService) CreateToken(user models.User) (*models.Claims, error) 
 // CreateUser implements services.UserService.
 func (s *MockUserService) CreateUser(user models.User) (string, error) {
 	return "1234", nil
+}
+
+func (s *MockUserService) UpdateUser(user models.User) error {
+	return nil
+}
+
+func (s *MockUserService) DeleteUser(id string) (int64, error) {
+	return 0, nil
 }
 
 // DetermineRole implements services.UserService.
@@ -75,7 +87,7 @@ func TestPostNewUser(t *testing.T) {
 		AppRole:  "guest",
 	}
 
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 	s := &MockUserService{Repository: repo}
 	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()
@@ -103,7 +115,7 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 		Password: "strong-password",
 	}
 
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 	s := services.NewUserService(repo, middleware.NewSyslogger(false))
 	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := gin.Default()
@@ -130,7 +142,7 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 		Password: "weak-wrong-password",
 	}
 
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 	s := services.NewUserService(repo, middleware.NewSyslogger(false))
 	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()

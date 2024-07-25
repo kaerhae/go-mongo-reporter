@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"errors"
+	"fmt"
 	"main/configs"
 	"main/pkg/models"
 
@@ -9,24 +9,10 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func setSecret() ([]byte, error) {
-	var secret = configs.GetSecret()
-	if secret == "" {
-		return nil, errors.New("no secret env set")
-	}
-	return []byte(secret), nil
-}
-
 func Authenticate(c *gin.Context) {
 	auth := c.GetHeader("Authorization")
 	if auth == "" {
 		c.AbortWithStatusJSON(401, gin.H{"message": "401 Unauthorized"})
-		return
-	}
-
-	secret, err := setSecret()
-	if err != nil {
-		c.AbortWithStatusJSON(500, gin.H{"message": "internal server error"})
 		return
 	}
 
@@ -36,7 +22,7 @@ func Authenticate(c *gin.Context) {
 		claims,
 		//nolint:revive
 		func(token *jwt.Token) (any, error) {
-			return secret, nil
+			return []byte(configs.GetSecret()), nil
 		})
 	if err != nil || token == nil {
 		c.AbortWithStatusJSON(400, gin.H{"message": "bad request"})
@@ -46,6 +32,43 @@ func Authenticate(c *gin.Context) {
 	if !token.Valid {
 		c.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
 		return
+	}
+
+	c.Next()
+}
+
+func AuthenticateAdmin(c *gin.Context) {
+	auth := c.GetHeader("Authorization")
+	if auth == "" {
+		c.AbortWithStatusJSON(401, gin.H{"message": "401 Unauthorized"})
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(
+		auth,
+		&models.Claims{},
+		//nolint:revive
+		func(token *jwt.Token) (any, error) {
+			return []byte(configs.GetSecret()), nil
+		})
+
+	if err != nil || token == nil {
+		fmt.Println(err)
+		c.AbortWithStatusJSON(400, gin.H{"message": "bad request"})
+		return
+	}
+	claims := token.Claims.(*models.Claims)
+
+	if !token.Valid {
+		c.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+	fmt.Printf("CLAIMS IS : %v\n", claims)
+	fmt.Printf("APP ROLE IS: %v", claims.AppRole)
+	if claims.AppRole != "admin" {
+		c.AbortWithStatusJSON(401, gin.H{
+			"message": "Permission denied",
+		})
 	}
 
 	c.Next()

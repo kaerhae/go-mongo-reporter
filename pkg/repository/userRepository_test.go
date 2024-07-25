@@ -10,7 +10,7 @@ import (
 )
 
 func TestRepoCreateShouldReturnID(t *testing.T) {
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 	id := primitive.NewObjectID()
 	newUser := models.User{
 		ID:           id,
@@ -30,7 +30,7 @@ func TestRepoCreateShouldReturnID(t *testing.T) {
 }
 
 func TestRepoSingleUserShouldBeRetrieved(t *testing.T) {
-	repo := helpers.InitMockRepository()
+	repo := helpers.InitMockUserRepository()
 
 	user, err := repo.GetSingleUser("user")
 	if err != nil {
