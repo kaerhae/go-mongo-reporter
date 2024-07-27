@@ -3,21 +3,6 @@ Simple Reporting Tool.
 
 Backend designed to use MongoDB. Backend written in Golang.
 
-## Project structure
-
-go-mongo-reporter/
-├─ api
-|├─
-├─ bin
-│  ├─ favicon.ico
-│  ├─ index.html
-│  ├─ robots.txt
-├─ src/
-│  ├─ index.css
-│  ├─ index.js
-├─ .gitignore
-├─ package.json
-├─ README.md
 
 ## Build and Installation
 
