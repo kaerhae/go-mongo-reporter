@@ -9,6 +9,7 @@ import (
 type UserService interface {
 	CreateUser(user models.User) (string, error)
 	CheckExistingUser(username string) (models.User, error)
+	GetByID(id string) (models.User, error)
 	GetAll() ([]models.User, error)
 	UpdateUser(user models.User) error
 	DeleteUser(id string) (int64, error)
@@ -35,7 +36,11 @@ func (u *userService) CreateUser(user models.User) (string, error) {
 }
 
 func (u *userService) CheckExistingUser(username string) (models.User, error) {
-	return u.Repository.GetSingleUser(username)
+	return u.Repository.GetSingleUserByUsername(username)
+}
+
+func (u *userService) GetByID(id string) (models.User, error) {
+	return u.Repository.GetSingleUserById(id)
 }
 
 func (u *userService) UpdateUser(user models.User) error {

@@ -13,7 +13,8 @@ import (
 type UserRepository interface {
 	Create(user *models.User) (string, error)
 	Get() ([]models.User, error)
-	GetSingleUser(username string) (models.User, error)
+	GetSingleUserById(id string) (models.User, error)
+	GetSingleUserByUsername(username string) (models.User, error)
 	UpdateSingleUser(user models.User) error
 	DeleteSingleUser(ID string) (int64, error)
 }
@@ -74,8 +75,8 @@ func (r *userRepository) Create(user *models.User) (string, error) {
 	return t, nil
 }
 
-// GetSingleUser implements UserRepository.
-func (r *userRepository) GetSingleUser(username string) (models.User, error) {
+// GetSingleUserByUsername implements UserRepository.
+func (r *userRepository) GetSingleUserByUsername(username string) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -89,6 +90,26 @@ func (r *userRepository) GetSingleUser(username string) (models.User, error) {
 	}
 
 	return result, nil
+}
+func (r *userRepository) GetSingleUserById(id string) (models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	collection := r.Client.Collection("users")
+	var user models.User
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return models.User{}, err
+	}
+	err = collection.FindOne(ctx, bson.D{{
+		Key:   "_id",
+		Value: objectID,
+	}}).Decode(&user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }
 
 // DeleteSingleUser implements UserRepository

@@ -66,7 +66,7 @@ func AuthenticateAdmin(c *gin.Context) {
 	fmt.Printf("CLAIMS IS : %v\n", claims)
 	fmt.Printf("APP ROLE IS: %v", claims.AppRole)
 	if claims.AppRole != "admin" {
-		c.AbortWithStatusJSON(401, gin.H{
+		c.AbortWithStatusJSON(403, gin.H{
 			"message": "Permission denied",
 		})
 	}

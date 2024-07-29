@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"main/configs"
 	"main/pkg/models"
@@ -44,9 +43,8 @@ func CreateToken(user models.User) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
 	claims := models.Claims{
-		Username:       user.Username,
-		AppRole:        user.AppRole,
-		ExpirationTime: expirationTime,
+		Username: user.Username,
+		AppRole:  user.AppRole,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -56,9 +54,7 @@ func CreateToken(user models.User) (string, error) {
 		claims)
 	secretKey := []byte(configs.GetSecret())
 	tokenstring, err := token.SignedString(secretKey)
-	fmt.Println("APPROLE CREATE TOKEN", user.AppRole)
 
-	fmt.Println("APPROLE IN CLAIMS: ", claims.AppRole)
 	if err != nil {
 		return "", err
 	}

@@ -35,7 +35,7 @@ func createAdminUserUp(adminUser string, adminPass string) {
 		log.Fatal("Error on connecting MongoDB", err)
 	}
 	r := repository.NewUserRepository(client)
-	_, err = r.GetSingleUser(adminUser)
+	_, err = r.GetSingleUserByUsername(adminUser)
 	if err == nil {
 		log.Default().Println("migration already done and user exists")
 		os.Exit(0)

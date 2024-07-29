@@ -43,6 +43,10 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 	adminGroup.Use(middleware.AuthenticateAdmin)
 	{
 		adminGroup.GET("/users", userHandler.Get)
+		adminGroup.GET("/users/:id", userHandler.GetByID)
+		adminGroup.POST("/users", userHandler.PostNewUser)
+		adminGroup.PUT("/users/:id", userHandler.UpdateUser)
+		adminGroup.DELETE("/users/:id", userHandler.DeleteUser)
 	}
 
 	router.GET("/", func(ctx *gin.Context) {
@@ -50,7 +54,6 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 		ctx.String(200, "Server up and running!")
 	})
 
-	router.POST("/signup", userHandler.PostNewUser)
 	router.POST("/login", userHandler.LoginUser)
 
 	return router

@@ -16,10 +16,16 @@ import (
 
 type mockUserRepository struct{}
 
+// GetSingleUserById implements MockUserRepository.
+func (m *mockUserRepository) GetSingleUserById(id string) (models.User, error) {
+	panic("unimplemented")
+}
+
 type MockUserRepository interface {
 	Create(user *models.User) (string, error)
 	Get() ([]models.User, error)
-	GetSingleUser(username string) (models.User, error)
+	GetSingleUserById(id string) (models.User, error)
+	GetSingleUserByUsername(id string) (models.User, error)
 	UpdateSingleUser(user models.User) error
 	DeleteSingleUser(ID string) (int64, error)
 }
@@ -37,13 +43,13 @@ func (m *mockUserRepository) Get() ([]models.User, error) {
 	return []models.User{}, nil
 }
 
-func (m *mockUserRepository) GetSingleUser(username string) (models.User, error) {
+func (m *mockUserRepository) GetSingleUserByUsername(id string) (models.User, error) {
 	pwd, err := utils.HashPwd("strong-password")
 	if err != nil {
 		log.Fatal(err)
 	}
 	return models.User{
-		Username:     username,
+		Username:     "test",
 		PasswordHash: pwd,
 		Email:        "test@test.com",
 		AppRole:      "guest",

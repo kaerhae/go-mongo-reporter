@@ -26,6 +26,10 @@ func (s *MockUserService) GetAll() ([]models.User, error) {
 	return []models.User{}, nil
 }
 
+func (s *MockUserService) GetByID(id string) (models.User, error) {
+	return models.User{}, nil
+}
+
 // CheckExistingUser implements services.UserService.
 func (s *MockUserService) CheckExistingUser(username string) (models.User, error) {
 	return models.User{}, errors.New("")
@@ -159,4 +163,23 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 401, w.Code)
 	assert.Equal(t, "Incorrect password", response.Message)
+}
+
+func TestGetAll(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+	repo := helpers.InitMockUserRepository()
+	s := &MockUserService{Repository: repo}
+	l := middleware.NewSyslogger(false)
+	userHandler := NewUserHandler(s, l)
+	r.GET("/user-management/users", userHandler.Get)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/api/reports", nil)
+	r.ServeHTTP(w, req)
+
+	var reports []models.Report
+	json.Unmarshal(w.Body.Bytes(), &reports)
+
+	assert.Equal(t, 200, w.Code)
+	assert.NotEmpty(t, reports)
 }

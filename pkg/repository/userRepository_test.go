@@ -32,12 +32,12 @@ func TestRepoCreateShouldReturnID(t *testing.T) {
 func TestRepoSingleUserShouldBeRetrieved(t *testing.T) {
 	repo := helpers.InitMockUserRepository()
 
-	user, err := repo.GetSingleUser("user")
+	user, err := repo.GetSingleUserByUsername("user")
 	if err != nil {
 		t.Fail()
 	}
 	assert.Equal(t, "user", user.Username)
 	assert.Equal(t, "test@test.com", user.Email)
-	assert.Equal(t, "guest", user.AppRole)
+	assert.Equal(t, models.Guest, user.AppRole)
 	assert.Equal(t, "2023-01-01", user.CreatedAt)
 }
