@@ -66,8 +66,10 @@ func TestGetAllReports(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var reports []models.Report
-	json.Unmarshal(w.Body.Bytes(), &reports)
-
+	err := json.Unmarshal(w.Body.Bytes(), &reports)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Equal(t, 200, w.Code)
 	assert.NotEmpty(t, reports)
 }
@@ -89,8 +91,10 @@ func TestGetSingleReport(t *testing.T) {
 		ID: objID, Topic: "test", Author: "Test", UserID: "123456789012345678901234",
 	}
 	var reports models.Report
-	json.Unmarshal(w.Body.Bytes(), &reports)
-
+	err := json.Unmarshal(w.Body.Bytes(), &reports)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, shouldBe, reports)
 }

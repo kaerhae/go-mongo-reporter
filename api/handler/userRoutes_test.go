@@ -108,7 +108,9 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 	router.ServeHTTP(w, req)
 	var response LoginResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-
+	if err != nil {
+		t.Fail()
+	}
 	assert.Nil(t, err)
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "Login succesful", response.Message)
@@ -155,8 +157,10 @@ func TestGetAll(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var users []models.User
-	json.Unmarshal(w.Body.Bytes(), &users)
-
+	err := json.Unmarshal(w.Body.Bytes(), &users)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Equal(t, 200, w.Code)
 	assert.NotEmpty(t, users)
 }
@@ -188,6 +192,9 @@ func TestPostNewUser(t *testing.T) {
 
 	var response SingleMessageResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Nil(t, err)
 	assert.Equal(t, 201, w.Code)
 	assert.Equal(t, "New user 1234 was succesfully created", response.Message)
@@ -212,8 +219,10 @@ func TestUpdateUser_ShouldUpdate(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var users []models.User
-	json.Unmarshal(w.Body.Bytes(), &users)
-
+	err := json.Unmarshal(w.Body.Bytes(), &users)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Equal(t, 200, w.Code)
 }
 
@@ -231,7 +240,9 @@ func TestDeleteUser_ShouldDelet(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var users []models.User
-	json.Unmarshal(w.Body.Bytes(), &users)
-
+	err := json.Unmarshal(w.Body.Bytes(), &users)
+	if err != nil {
+		t.Fail()
+	}
 	assert.Equal(t, 200, w.Code)
 }
