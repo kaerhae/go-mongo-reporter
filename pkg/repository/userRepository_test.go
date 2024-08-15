@@ -12,13 +12,15 @@ import (
 func TestRepoCreateShouldReturnID(t *testing.T) {
 	repo := helpers.InitMockUserRepository()
 	id := primitive.NewObjectID()
+	p := models.Permission{}
+	p.SetDefaultPermissions()
 	newUser := models.User{
 		ID:           id,
 		Username:     "test",
 		Email:        "test@test.com",
 		PasswordHash: "pass",
-		AppRole:      "guest",
 		CreatedAt:    "nil",
+		Permission:   p,
 	}
 	u, err := repo.Create(&newUser)
 
@@ -31,13 +33,36 @@ func TestRepoCreateShouldReturnID(t *testing.T) {
 
 func TestRepoSingleUserShouldBeRetrieved(t *testing.T) {
 	repo := helpers.InitMockUserRepository()
-
-	user, err := repo.GetSingleUserByUsername("user")
+	p := models.Permission{}
+	p.SetDefaultPermissions()
+	user, err := repo.GetSingleUserByUsername("test")
 	if err != nil {
 		t.Fail()
 	}
-	assert.Equal(t, "user", user.Username)
+	assert.Equal(t, "test", user.Username)
 	assert.Equal(t, "test@test.com", user.Email)
-	assert.Equal(t, models.Guest, user.AppRole)
+	assert.Equal(t, p, user.Permission)
 	assert.Equal(t, "2023-01-01", user.CreatedAt)
+}
+
+func TestRepoCreate_ShouldCreateUser(t *testing.T) {
+	repo := helpers.InitMockUserRepository()
+	id, err := primitive.ObjectIDFromHex("123456789012345678901234")
+	if err != nil {
+		t.Fail()
+	}
+	p := models.Permission{}
+	p.SetDefaultPermissions()
+	newUser := models.User{
+		ID:         id,
+		Username:   "test",
+		Email:      "test@test.com",
+		Permission: p,
+	}
+	objectId, err := repo.Create(&newUser)
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, objectId, id.Hex())
 }

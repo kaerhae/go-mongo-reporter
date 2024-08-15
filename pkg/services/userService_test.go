@@ -16,12 +16,13 @@ func initUserService() services.UserService {
 }
 
 func TestRegistrationShouldReturnId(t *testing.T) {
-	newUser := models.User{
-		Username:     "test",
-		Email:        "test@test.com",
-		PasswordHash: "test",
-		AppRole:      "guest",
-		CreatedAt:    "nil",
+	p := models.Permission{}
+	p.SetDefaultPermissions()
+	newUser := models.CreateUser{
+		Username:   "test",
+		Email:      "test@test.com",
+		Password:   "test",
+		Permission: p,
 	}
 	s := initUserService()
 	tUser, err := s.CreateUser(newUser)

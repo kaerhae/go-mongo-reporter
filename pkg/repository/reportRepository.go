@@ -63,6 +63,8 @@ func (r *reportRepository) Get() ([]models.Report, error) {
 
 	return reports, nil
 }
+
+//nolint:dupl
 func (r *reportRepository) GetSingle(id string) (models.Report, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()

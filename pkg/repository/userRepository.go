@@ -13,7 +13,7 @@ import (
 type UserRepository interface {
 	Create(user *models.User) (string, error)
 	Get() ([]models.User, error)
-	GetSingleUserById(id string) (models.User, error)
+	GetSingleUserByID(id string) (models.User, error)
 	GetSingleUserByUsername(username string) (models.User, error)
 	UpdateSingleUser(user models.User) error
 	DeleteSingleUser(ID string) (int64, error)
@@ -91,7 +91,9 @@ func (r *userRepository) GetSingleUserByUsername(username string) (models.User, 
 
 	return result, nil
 }
-func (r *userRepository) GetSingleUserById(id string) (models.User, error) {
+
+//nolint:dupl
+func (r *userRepository) GetSingleUserByID(id string) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -119,9 +121,13 @@ func (r *userRepository) DeleteSingleUser(id string) (int64, error) {
 
 	collection := r.Client.Collection("users")
 
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return 0, err
+	}
 	deleteCount, err := collection.DeleteOne(ctx, bson.D{{
 		Key:   "_id",
-		Value: id,
+		Value: objectID,
 	}})
 	if err != nil {
 		return 0, err

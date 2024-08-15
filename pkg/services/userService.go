@@ -1,13 +1,19 @@
 package services
 
 import (
+	"fmt"
 	"main/pkg/middleware"
 	"main/pkg/models"
 	"main/pkg/repository"
+	"main/pkg/utils"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService interface {
-	CreateUser(user models.User) (string, error)
+	CreateUser(user models.CreateUser) (string, error)
+	CreateGuestUser(user models.CreateGuestUser) (string, error)
 	CheckExistingUser(username string) (models.User, error)
 	GetByID(id string) (models.User, error)
 	GetAll() ([]models.User, error)
@@ -31,8 +37,43 @@ func (u *userService) GetAll() ([]models.User, error) {
 	return u.Repository.Get()
 }
 
-func (u *userService) CreateUser(user models.User) (string, error) {
-	return u.Repository.Create(&user)
+/* User will be created with u.CreateUser, but this method makes sure that guest has correct permissions */
+func (u *userService) CreateGuestUser(user models.CreateGuestUser) (string, error) {
+	guestPermissions := models.Permission{
+		Admin: false,
+		Write: false,
+		Read:  true,
+	}
+	insertableUser := models.CreateUser{
+		Username:   user.Username,
+		Email:      user.Email,
+		Password:   user.Password,
+		Permission: guestPermissions,
+	}
+
+	return u.CreateUser(insertableUser)
+}
+
+func (u *userService) CreateUser(user models.CreateUser) (string, error) {
+	hash, err := utils.HashPwd(user.Password)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while hashing password: %v", err),
+		)
+		return "", err
+	}
+
+	newUser := models.User{
+		ID:           primitive.NewObjectID(),
+		Username:     user.Username,
+		Email:        user.Email,
+		PasswordHash: hash,
+		CreatedAt:    time.Now().UTC().String(),
+		Permission:   user.Permission,
+		Reports:      []primitive.ObjectID{},
+	}
+
+	return u.Repository.Create(&newUser)
 }
 
 func (u *userService) CheckExistingUser(username string) (models.User, error) {
@@ -40,7 +81,7 @@ func (u *userService) CheckExistingUser(username string) (models.User, error) {
 }
 
 func (u *userService) GetByID(id string) (models.User, error) {
-	return u.Repository.GetSingleUserById(id)
+	return u.Repository.GetSingleUserByID(id)
 }
 
 func (u *userService) UpdateUser(user models.User) error {

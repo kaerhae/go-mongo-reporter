@@ -23,8 +23,6 @@ services:
       - mongo
     depends_on:
       - mongo
-    networks:
-      - reporternet
 
   mongo:
     image: mongo
@@ -35,9 +33,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_INITDB_DATABASE: reporter
-    networks:
-      - reporternet
 
+      
   mongo-express:
     image: mongo-express
     restart: always
@@ -47,8 +44,19 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
-    networks:
-      - reporternet
+
+
+  mongoimport:
+    image: mongo-seed
+    ports:
+      - '37017:37017'
+    build:
+      context: .
+      dockerfile: ./docker/mongo/Dockerfile
+    container_name: mongo-seed
+    restart: on-failure
+    depends_on:
+      - mongo
 
   migration:
     image: go-mongo-reporter-migration
@@ -61,17 +69,11 @@ services:
       - MONGO_IP=mongo
       - MONGO_PORT=27017
       - DATABASE=reporter
-      - REPORTER_ROOT_USER=root
-      - REPORTER_ROOT_PASSWORD=example
+      - REPORTER_ROOT_USER=robot_admin_user
+      - REPORTER_ROOT_PASSWORD=1234
     restart: on-failure
     command: up
     links:
       - mongo
     depends_on:
       - mongo
-    networks:
-      - reporternet
-
-networks:
-  reporternet:
-    driver: bridge

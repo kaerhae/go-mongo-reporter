@@ -16,7 +16,7 @@ Test Signup
     Create Reporter Session
     ${data}=    Create Dictionary    username=robot    email=robot@test.com    password=1234    appRole=admin
     ${response}=    POST On Session    reporter-session    /signup    json=${data}    expected_status=anything
-    IF    ${response.status_code} == 400
+    IF    ${response.status_code} == 409
         Assert Signup With Existing Username    ${response.json()}
     ELSE
         Assert Signup With New User    ${response.json()}
@@ -27,20 +27,10 @@ Test Signup with Missing Username
     Create Reporter Session
     ${data}=    Create Dictionary    email=robot@test.com    password=1234    appRole=admin
     ${response}=    POST On Session    reporter-session    /signup    json=${data}    expected_status=anything
-    Log    RESPONSE IS : ${response.json()}    console=yes
     Status Should Be    400
     Dictionary Should Contain Key    ${response.json()}    message
-    Should Be Equal As Strings    ${response.json()}[message]    Malformatted body   
+    Should Be Equal As Strings    ${response.json()}[message]    Malformatted guest user body   
 
-
-Test Signup with Malformatted AppRole
-    [Documentation]    Test signup route handler. Should return error code and message.
-    Create Reporter Session
-    ${data}=    Create Dictionary    username=robot-role-tester    password=blaah    email=robot@test.com   appRole=wrong
-    ${response}=    POST On Session    reporter-session    /signup    json=${data}    expected_status=any
-    Status Should Be    400
-    Dictionary Should Contain Key    ${response.json()}    message
-    Should Be Equal As Strings    ${response.json()}[message]    Malformatted role   
 
 Test Successful Login
     [Documentation]    Test login route handler. It should return successful code and token due to previous signup.
@@ -78,13 +68,11 @@ Create Reporter Session
 
 Assert Signup With Existing Username
     [Arguments]    ${RESPONSE_JSON}
-    Log    Asserting signup with existing username    console=yes
     Dictionary Should Contain Key    ${RESPONSE_JSON}    message
     Should Be Equal As Strings    ${RESPONSE_JSON}[message]    Username already exists 
     
 Assert Signup With New User
     [Arguments]    ${RESPONSE_JSON}
-    Log    Asserting signup with new user    console=yes
     Status Should Be    200
     Dictionary Should Contain Key    ${RESPONSE_JSON}    message
     Should Contain    ${RESPONSE_JSON}[message]    New user

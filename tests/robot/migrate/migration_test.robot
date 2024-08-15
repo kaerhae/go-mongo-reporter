@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation        Integration tests for cmd/migrate/*
 Library    OperatingSystem
-Library    Builtin
+Library    BuiltIn
 Library    SeleniumLibrary
 Library    RequestsLibrary
 Library    JSONLibrary
@@ -11,10 +11,11 @@ Library    String
 *** Variables ***
 ${MONGO_USER}    root
 ${MONGO_PASS}    example
-${MONGO_IP}    172.18.0.2
+${MONGO_IP}    localhost
 ${MONGO_PORT}    27017
 ${REPORTER_ROOT_USER}    root
-${REPORTER_ROOT_PASSWORD}    example
+${REPORTER_ROOT_PASSWORD}    1234
+${DATABASE}    reporter
 
 
 ${ROBOT_FOLDER}    ${CURDIR}
@@ -88,15 +89,17 @@ Build Binary
     Set Environment Variable    MONGO_PORT    ${MONGO_PORT}
     Set Environment Variable    REPORTER_ROOT_USER    ${REPORTER_ROOT_USER}
     Set Environment Variable    REPORTER_ROOT_PASSWORD    ${REPORTER_ROOT_PASSWORD}
+    Set Environment Variable    DATABASE    ${DATABASE}
     Directory Should Exist    ${MIGRATE_CMD_FOLDER}
     Directory Should Exist    ${BIN_FOLDER}
 
     Run    go build -o ${MIGRATE_BINARY} ${MIGRATE_CMD_FOLDER}/main.go
     File Should Exist    ${MIGRATE_BINARY}
 
+
 Remove Possible Admin User and Remove Binary
     [Documentation]    Teardown possible added user and remove Binary
-    Run    ${MIGRATE_BINARY} down
+    ${r}=    Run    ${MIGRATE_BINARY} down
     Run    rm ${MIGRATE_BINARY}
     File Should Not Exist    ${MIGRATE_BINARY}
 

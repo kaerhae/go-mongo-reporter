@@ -43,8 +43,9 @@ func CreateToken(user models.User) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
 	claims := models.Claims{
-		Username: user.Username,
-		AppRole:  user.AppRole,
+		UserID:      user.ID,
+		Username:    user.Username,
+		Permissions: user.Permission,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -60,19 +61,4 @@ func CreateToken(user models.User) (string, error) {
 	}
 
 	return tokenstring, nil
-}
-
-func DetermineRole(role string) (models.Role, error) {
-	switch role {
-	case "admin":
-		return models.Admin, nil
-	case "maintainer":
-		return models.Maintainer, nil
-	case "creator":
-		return models.Creator, nil
-	case "guest":
-		return models.Guest, nil
-	default:
-		return models.Undefined, errors.New("Role undefined: " + role)
-	}
 }

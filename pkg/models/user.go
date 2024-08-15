@@ -10,25 +10,21 @@ type User struct {
 	Email        string               `json:"email" bson:"email"`
 	PasswordHash string               `json:"-" bson:"password_hash"`
 	CreatedAt    string               `json:"createdAt" bson:"created_at"`
-	AppRole      Role                 `json:"appRole" bson:"app_role"`
+	Permission   Permission           `json:"permission" bson:"permission"`
 	Reports      []primitive.ObjectID `json:"reports" bson:"reports"`
 }
 
-type Role string
-
-const (
-	Admin      Role = "admin"
-	Maintainer Role = "maintainer"
-	Creator    Role = "creator"
-	Guest      Role = "guest"
-	Undefined  Role = ""
-)
-
 type CreateUser struct {
+	Username   string     `json:"username"`
+	Email      string     `json:"email"`
+	Password   string     `json:"password"`
+	Permission Permission `json:"permission"`
+}
+
+type CreateGuestUser struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	AppRole  string `json:"appRole"`
 }
 
 type LoginUser struct {

@@ -55,6 +55,7 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 	})
 
 	router.POST("/login", userHandler.LoginUser)
+	router.POST("/signup", userHandler.PostNewGuestUser)
 
 	return router
 }

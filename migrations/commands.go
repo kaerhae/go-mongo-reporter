@@ -56,8 +56,12 @@ func createAdminUserUp(adminUser string, adminPass string) {
 		Email:        "",
 		PasswordHash: hashPwd,
 		CreatedAt:    time.Now().UTC().String(),
-		AppRole:      models.Admin,
-		Reports:      []primitive.ObjectID{},
+		Permission: models.Permission{
+			Admin: true,
+			Write: true,
+			Read:  true,
+		},
+		Reports: []primitive.ObjectID{},
 	}
 
 	_, err = r.Create(&admin)

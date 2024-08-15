@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"main/pkg/middleware"
 	"main/pkg/models"
@@ -119,7 +120,7 @@ func (r *reportRouter) Post(c *gin.Context) {
 
 // Update implements ReportRouter.
 func (r *reportRouter) Update(c *gin.Context) {
-	id := c.Param("id")
+	reportID := c.Param("id")
 	var body models.Report
 	err := c.BindJSON(&body)
 	if err != nil {
@@ -130,10 +131,16 @@ func (r *reportRouter) Update(c *gin.Context) {
 		return
 	}
 
-	existingReport, err := r.Service.GetSingleReport(id)
+	existingReport, err := r.Service.GetSingleReport(reportID)
 	if err != nil {
 		r.Logger.LogInfo("No report found")
-		c.IndentedJSON(400, gin.H{"message": "No report found"})
+		c.IndentedJSON(404, gin.H{"message": "No report found"})
+		return
+	}
+
+	status, err := checkOwnership(r, c, reportID)
+	if err != nil {
+		c.IndentedJSON(status, gin.H{"message": "Error while validating request"})
 		return
 	}
 
@@ -161,7 +168,11 @@ func (r *reportRouter) Update(c *gin.Context) {
 // Delete implements ReportRouter.
 func (r *reportRouter) Delete(c *gin.Context) {
 	id := c.Param("id")
-
+	status, err := checkOwnership(r, c, id)
+	if err != nil {
+		c.IndentedJSON(status, gin.H{"message": fmt.Sprintf("Error while validating request: %v", err)})
+		return
+	}
 	deletedCount, err := r.Service.DeleteReport(id)
 	if err != nil {
 		r.Logger.LogError(
@@ -182,4 +193,50 @@ func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {
 		return primitive.ObjectID{}, err
 	}
 	return objID, nil
+}
+
+func getSessionData(c *gin.Context) (id string, isAdmin bool, err error) {
+
+	userID, exists := c.Get("userId")
+	if !exists {
+		return "", false, errors.New("userId not set")
+	}
+
+	id, ok := userID.(string)
+	if !ok {
+		return "", false, errors.New("userId is not a string")
+	}
+
+	isAdminAny, exists := c.Get("isAdmin")
+	if !exists {
+		return "", false, errors.New("isAdmin not set")
+	}
+
+	isAdmin, ok = isAdminAny.(bool)
+	if !ok {
+		return "", false, errors.New("isAdmin is not a bool")
+	}
+
+	return id, isAdmin, nil
+}
+
+func checkOwnership(r *reportRouter, c *gin.Context, reportID string) (int, error) {
+
+	userID, isAdmin, err := getSessionData(c)
+	if err != nil {
+		r.Logger.LogInfo(fmt.Sprintf("Error on fetching session data %v", err))
+		return 500, errors.New("internal server error")
+	}
+	existingReport, err := r.Service.GetSingleReport(reportID)
+	if err != nil {
+		r.Logger.LogInfo(fmt.Sprintf("No report found, with id: %s", reportID))
+		return 404, errors.New("no report found")
+	}
+
+	if existingReport.UserID != userID && !isAdmin {
+		r.Logger.LogError("Error: requested non-admin user does not own report")
+		return 405, errors.New("unauthorized method")
+	}
+
+	return -1, nil
 }

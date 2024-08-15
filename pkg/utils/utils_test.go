@@ -10,9 +10,11 @@ import (
 
 func TestTokenCreation(t *testing.T) {
 	os.Setenv("SECRET_KEY", "123")
+	permission := models.Permission{}
+	permission.SetDefaultPermissions()
 	user := models.User{
-		Username: "tester",
-		AppRole:  "admin",
+		Username:   "tester",
+		Permission: permission,
 	}
 	token, err := CreateToken(user)
 	if err != nil {
@@ -51,34 +53,4 @@ func TestCheckPassword_ShouldBeErrorOnNullValue(t *testing.T) {
 	}
 	err = CheckPassword(hash, passwd)
 	assert.NotNil(t, err)
-}
-
-func TestRoleDeterminationShouldReturnCorrect(t *testing.T) {
-	g, err := DetermineRole("guest")
-	if err != nil {
-		t.Fail()
-	}
-	a, err := DetermineRole("admin")
-	if err != nil {
-		t.Fail()
-	}
-	m, err := DetermineRole("maintainer")
-	if err != nil {
-		t.Fail()
-	}
-	c, err := DetermineRole("creator")
-	if err != nil {
-		t.Fail()
-	}
-
-	if g != models.Guest || a != models.Admin || c != models.Creator || m != models.Maintainer {
-		t.Fail()
-	}
-}
-
-func TestRoleDeterminationShouldRetunUndefined(t *testing.T) {
-	g, err := DetermineRole("other")
-	if err == nil || g != models.Undefined {
-		t.Fail()
-	}
 }
