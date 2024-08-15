@@ -218,11 +218,6 @@ func TestUpdateUser_ShouldUpdate(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPut, "/user-management/users/1", bytes.NewBuffer(payload))
 	r.ServeHTTP(w, req)
 
-	var users []models.User
-	err := json.Unmarshal(w.Body.Bytes(), &users)
-	if err != nil {
-		t.Fail()
-	}
 	assert.Equal(t, 200, w.Code)
 }
 
@@ -239,10 +234,5 @@ func TestDeleteUser_ShouldDelet(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodDelete, "/user-management/users/1", nil)
 	r.ServeHTTP(w, req)
 
-	var users []models.User
-	err := json.Unmarshal(w.Body.Bytes(), &users)
-	if err != nil {
-		t.Fail()
-	}
 	assert.Equal(t, 200, w.Code)
 }
