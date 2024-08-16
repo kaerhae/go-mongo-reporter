@@ -2,7 +2,7 @@
 
 This folder contains Robot Framework tests for migrate, "/", user handlers and report handlers.
 
-To run these tests, `robotframework` must be installed with `robotframework-seleniumlibrary`, `robotframework-requests`, and `robotframework-jsonlibrary`. Also MongoDB has to be running for every test, and additionally reporter server must be running for `report_test.robot`, `user_test.robot`, and `smoke_test.robot`.
+To run these tests, `robotframework` must be installed with `robotframework-seleniumlibrary`, `robotframework-requests`, and `robotframework-jsonlibrary`. Also MongoDB has to be running for every test, and additionally reporter server must be running for `admin_user_report_test.robot`, `guest_user_report_test.robot`, `admin_user_test.robot`, `login_test.robot` and `smoke_test.robot`.
 
 Install dependencies with:
 ```bash
