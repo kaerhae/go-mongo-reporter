@@ -51,7 +51,7 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 	}
 
 	authenticationManageGroup := router.Group("/")
-	authenticationManageGroup.Use(middleware.Authenticate)
+	authenticationManageGroup.Use(middleware.AuthenticateTokenOnly)
 	{
 		authenticationManageGroup.PUT("/change-password", userHandler.UpdatePassword)
 	}

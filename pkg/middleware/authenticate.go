@@ -79,6 +79,42 @@ func Authenticate(c *gin.Context) {
 	c.Next()
 }
 
+func AuthenticateTokenOnly(c *gin.Context) {
+	auth := c.GetHeader("Authorization")
+	if auth == "" {
+		c.AbortWithStatusJSON(401, gin.H{"message": "401 Unauthorized"})
+		return
+	}
+
+	claims := &models.Claims{}
+	token, err := jwt.ParseWithClaims(
+		auth,
+		claims,
+		//nolint:revive
+		func(token *jwt.Token) (any, error) {
+			return []byte(configs.GetSecret()), nil
+		})
+	if err != nil || token == nil {
+		c.AbortWithStatusJSON(400, gin.H{"message": "bad request"})
+		return
+	}
+
+	if !token.Valid {
+		c.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+
+	/*
+		Finally when authorization is successful, add userId to store.
+		If admin, set isAdmin == true to store.
+	*/
+	c.Set("userId", claims.UserID.Hex())
+	if claims.Permissions.Admin {
+		c.Set("isAdmin", true)
+	}
+	c.Next()
+}
+
 /*
 Middleware function authorizes admin-only.
 Gets token from Authorization header, validates it, and checks that user is admin.

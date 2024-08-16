@@ -1,7 +1,7 @@
 # go-mongo-reporter
 Simple Reporting Tool. 
 
-Backend designed to use MongoDB. Backend written in Golang.
+Backend designed to use MongoDB. Backend written in Golang. Project contains reporter app, migration tool, and also unit/integration tests and building tools. Backend is designed as REST API, which is built to support MongoDB. Exhaustive API description can be found  [here](/api/README.md)
 
 
 ## Build and Installation
