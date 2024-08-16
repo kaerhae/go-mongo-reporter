@@ -8,7 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// POST /users
+/*
+POST /signup route. Allowed all access. Takes CreateGuestUser model as request body and validates body.
+
+Checks that user does not exist. If exists, return 409 error.
+
+Finally calls CreateGuestUser method and if successful, returns response with success message.
+*/
 //
 //nolint:dupl
 func (u *userRouter) PostNewGuestUser(c *gin.Context) {

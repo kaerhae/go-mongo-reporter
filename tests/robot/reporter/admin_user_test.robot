@@ -17,12 +17,13 @@ ${UPDATED_TOPIC}    Updated Robot report
 ${UPDATED_DESCRIPTION}    Updated Robot test report    
 ${UPDATED_AUTHOR}    Updated Robot
 
+
 *** Settings ***
 Suite Setup   Login User and Get token
 
+
+
 *** Test Cases ***
-
-
 Test Successful Get Users
     [Documentation]    Test should return successfully all users
     Create Authenticated Reporter Session    ${TOKEN}
@@ -96,6 +97,80 @@ Test Unsuccessful Report Update Without Authentication
     Dictionary Should Contain Key    ${response.json()}    message
     Should Be Equal As Strings    ${response.json()}[message]       401 Unauthorized
 
+    
+
+Test Successful User UpdatePassword
+    [Documentation]    Test user PUT route handler. Should be able to update user and inform success message and code.
+    Create Authenticated Reporter Session    ${TOKEN}
+    Ensure Created User
+    ${get_response}=     GET On Session    auth-reporter-session    /user-management/users
+    Status Should Be    200
+    ${result}=    Filter By Value    ${get_response.json()}    username    testuser
+    ${report_data}=    Create Dictionary    userID=${result}[0][id]    oldPassword=1234    newPassword=12345
+
+    ${response}=    PUT On Session    auth-reporter-session    /change-password    json=${report_data}
+    Status Should Be    200
+    Dictionary Should Contain Key    ${response.json()}    message
+    Should Contain    ${response.json()}[message]       Password updated successfully
+
+    ${data}=        Create Dictionary        username=testuser        password=12345
+    ${response}=        POST On Session        reporter-session        /login        json=${data}
+    Status Should Be        200
+
+    Find and Delete User
+
+
+Test Unsuccessful User UpdatePassword Without Authentication
+    [Documentation]    Test user PUT route handler. Should be unsuccessful.
+    Create Reporter Session
+    ${report_data}=    Create Dictionary    username=testuser    email=new@email.com    password=1234
+    Ensure Created User
+    ${get_response}=     GET On Session    auth-reporter-session    /user-management/users
+    Status Should Be    200
+    ${result}=    Filter By Value    ${get_response.json()}    username    testuser
+    ${report_data}=    Create Dictionary    userID=${result}[0][id]    oldPassword=1234    newPassword=12345
+    ${response}=    PUT On Session    reporter-session    /change-password    json=${report_data}    expected_status=any
+    Status Should Be    401
+    Dictionary Should Contain Key    ${response.json()}    message
+    Should Be Equal As Strings    ${response.json()}[message]       401 Unauthorized
+
+
+Test Successful User UpdatePermissions
+    [Documentation]    Test user PUT route handler. Should be able to update user and inform success message and code.
+    Create Authenticated Reporter Session    ${TOKEN}
+    Ensure Created User
+    ${get_response}=     GET On Session    auth-reporter-session    /user-management/users
+    Status Should Be    200
+    ${result}=    Filter By Value    ${get_response.json()}    username    testuser
+    ${permissions_data}=    Create Dictionary    admin=${True}    write=${True}    read=${False}
+    ${report_data}=    Create Dictionary    userID=${result}[0][id]    permissions=${permissions_data}
+
+    ${response}=    PUT On Session    auth-reporter-session    /user-management/users/change-permissions    json=${report_data}
+    Status Should Be    200
+    Dictionary Should Contain Key    ${response.json()}    message
+    Should Contain    ${response.json()}[message]       permissions updated
+
+    ${response}=    GET On Session    auth-reporter-session    /user-management/users/${result}[0][id]
+
+    Should Be Equal    ${response.json()}[permission][admin]    ${True}
+    Should Be Equal    ${response.json()}[permission][write]    ${True}
+    Should Be Equal    ${response.json()}[permission][read]    ${False}
+    Find and Delete User
+
+
+Test Unsuccessful User UpdatePermissions Without Authentication
+    [Documentation]    Test user PUT route handler. Should be unsuccessful.
+    Create Reporter Session
+    Ensure Created User
+    ${get_response}=     GET On Session    auth-reporter-session    /user-management/users
+    Status Should Be    200
+    ${result}=    Filter By Value    ${get_response.json()}    username    testuser
+    ${report_data}=    Create Dictionary    userID=${result}[0][id]    oldPassword=1234    newPassword=12345
+    ${response}=    PUT On Session    reporter-session    /user-management/users/change-permissions    json=${report_data}    expected_status=anything
+    Status Should Be    401
+    Dictionary Should Contain Key    ${response.json()}    message
+    Should Be Equal As Strings    ${response.json()}[message]       401 Unauthorized
+
 Test Successful Report Delete
     [Documentation]    Test user DELETE route handler. Should be able to delete user and inform success message and code.
     Create Authenticated Reporter Session    ${TOKEN}
@@ -109,8 +184,8 @@ Test Successful Report Delete
     Should Contain    ${response.json()}[message]       Deleted 1 user
 
 
-Test Unsuccessful Report Update Without Authentication
-    [Documentation]    Test user PUT route handler. Should be unsuccessful.
+Test Unsuccessful Report Delete Without Authentication
+    [Documentation]    Test user DELETE route handler. Should be unsuccessful.
     Create Reporter Session
     Ensure Created User
     ${get_response}=     GET On Session    auth-reporter-session    /user-management/users

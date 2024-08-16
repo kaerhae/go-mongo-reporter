@@ -31,7 +31,9 @@ func NewReportRouter(service services.ReportService, logger middleware.Logger) R
 	}
 }
 
-// Get implements ReportRouter.
+/*
+GET /api/reports route. Allowed all access. Retrieves all reports from db.
+*/
 func (r *reportRouter) Get(c *gin.Context) {
 	reports, err := r.Service.GetAllReports()
 	if err != nil {
@@ -45,7 +47,9 @@ func (r *reportRouter) Get(c *gin.Context) {
 	c.IndentedJSON(200, reports)
 }
 
-// GetById implements ReportRouter.
+/*
+GET /api/reports route. Allowed all access. Retrieves single report by ID from db.
+*/
 func (r *reportRouter) GetByID(c *gin.Context) {
 	id := c.Param("id")
 	report, err := r.Service.GetSingleReport(id)
@@ -62,7 +66,14 @@ func (r *reportRouter) GetByID(c *gin.Context) {
 	c.IndentedJSON(200, report)
 }
 
-// Post implements ReportRouter.
+/*
+POST /api/reports route. Admin and write permission required. Takes Report model as request body and validates body.
+
+Checks that user exists. If exists, return 400 error.
+
+Finally calls CreateGuestUser method and if successful, returns response with success message.
+Also updates reports property from user, which posted new report.
+*/
 func (r *reportRouter) Post(c *gin.Context) {
 	var body models.Report
 	err := c.BindJSON(&body)
@@ -118,7 +129,13 @@ func (r *reportRouter) Post(c *gin.Context) {
 	c.IndentedJSON(200, gin.H{"message": "Report was succesfully created"})
 }
 
-// Update implements ReportRouter.
+/*
+PUT /api/reports/:id route. Admin and write permission required. Takes id as url parameter and Report model as request body and validates body.
+
+Checks that report exists. If exists, return 400 error. Checks that user owns report. Return error, if not own nor user is admin.
+
+Finally calls UpdateReport method and if successful, returns response with success message.
+*/
 func (r *reportRouter) Update(c *gin.Context) {
 	reportID := c.Param("id")
 	var body models.Report
@@ -165,7 +182,13 @@ func (r *reportRouter) Update(c *gin.Context) {
 	})
 }
 
-// Delete implements ReportRouter.
+/*
+DELETE /api/reports/:id route. Admin and write permission required. Takes id as url parameter.
+
+Checks that user owns report. Return error, if not own nor user is admin.
+
+Finally calls DeleteReport method and if successful, returns response with success message.
+*/
 func (r *reportRouter) Delete(c *gin.Context) {
 	id := c.Param("id")
 	status, err := checkOwnership(r, c, id)
@@ -187,6 +210,9 @@ func (r *reportRouter) Delete(c *gin.Context) {
 	})
 }
 
+/*
+Takes a string, and converts it to primitive.ObjectID type
+*/
 func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -195,34 +221,18 @@ func convertStringToPrimitiveID(id string) (primitive.ObjectID, error) {
 	return objID, nil
 }
 
-func getSessionData(c *gin.Context) (id string, isAdmin bool, err error) {
+/*
+Takes reportRouter type, *gin.Context, and reportID as parameters.
 
-	userID, exists := c.Get("userId")
-	if !exists {
-		return "", false, errors.New("userId not set")
-	}
+Gets userID and isAdmin boolean from gin.Context. If not exist, return 500 error.
 
-	id, ok := userID.(string)
-	if !ok {
-		return "", false, errors.New("userId is not a string")
-	}
+Gets report by given id, if not found, returns 404 error.
 
-	isAdminAny, exists := c.Get("isAdmin")
-	if !exists {
-		return "", false, errors.New("isAdmin not set")
-	}
-
-	isAdmin, ok = isAdminAny.(bool)
-	if !ok {
-		return "", false, errors.New("isAdmin is not a bool")
-	}
-
-	return id, isAdmin, nil
-}
-
+Checks that session user is either admin or owns report. If not, return 405 error
+*/
 func checkOwnership(r *reportRouter, c *gin.Context, reportID string) (int, error) {
 
-	userID, isAdmin, err := getSessionData(c)
+	userID, isAdmin, err := middleware.GetSessionData(c)
 	if err != nil {
 		r.Logger.LogInfo(fmt.Sprintf("Error on fetching session data %v", err))
 		return 500, errors.New("internal server error")
