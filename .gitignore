@@ -30,3 +30,5 @@ tests/robot/*.html
 tests/robot/*.xml
 *xml
 *.html
+
+/tests/robot/__pycache__/*

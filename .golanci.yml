@@ -1,15 +1,18 @@
 run:
-  skip-dirs:
-      - kubernetes
-      - tests
-      - scripts
-      - bin
-      - build
   concurrency: 4
   timeout: 5m
   issues-exit-code: 2
   tests: false
 
+issues:
+  exclude-dirs:
+      - kubernetes
+      - docker
+      - tests
+      - scripts
+      - bin
+      - build
+      - pkg/helpers
 output:
   print-issued-lines: false
   print-linter-name: true

@@ -23,7 +23,7 @@ func TestPostNewGuestUser(t *testing.T) {
 	}
 
 	repo := helpers.InitMockUserRepository()
-	s := &MockUserService{Repository: repo}
+	s := &helpers.MockUserService{Repository: repo}
 	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()
 	router.POST("/signup", handler.PostNewGuestUser)
@@ -34,7 +34,7 @@ func TestPostNewGuestUser(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 
-	var response SingleMessageResponse
+	var response helpers.SingleMessageResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 
 	assert.Nil(t, err)

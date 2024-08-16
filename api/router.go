@@ -46,7 +46,14 @@ func SetupRouter(logger middleware.Logger) *gin.Engine {
 		adminGroup.GET("/users/:id", userHandler.GetByID)
 		adminGroup.POST("/users", userHandler.PostNewUser)
 		adminGroup.PUT("/users/:id", userHandler.UpdateUser)
+		adminGroup.PUT("/users/change-permissions", userHandler.UpdateUserPermissions)
 		adminGroup.DELETE("/users/:id", userHandler.DeleteUser)
+	}
+
+	authenticationManageGroup := router.Group("/")
+	authenticationManageGroup.Use(middleware.Authenticate)
+	{
+		authenticationManageGroup.PUT("/change-password", userHandler.UpdatePassword)
 	}
 
 	router.GET("/", func(ctx *gin.Context) {

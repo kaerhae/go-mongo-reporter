@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"main/pkg/helpers"
 	"main/pkg/middleware"
 	"main/pkg/models"
@@ -16,69 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
-
-type MockUserService struct {
-	Repository helpers.MockUserRepository
-	Logger     middleware.Logger
-}
-
-func (s *MockUserService) GetAll() ([]models.User, error) {
-	return []models.User{
-		{Username: "test", Email: "test@test.com", Permission: models.Permission{}},
-		{Username: "test2", Email: "test@test.com", Permission: models.Permission{}},
-	}, nil
-}
-
-func (s *MockUserService) GetByID(id string) (models.User, error) {
-	return models.User{Username: "test", Email: "test@test.com", Permission: models.Permission{}}, nil
-}
-
-// CheckExistingUser implements services.UserService.
-func (s *MockUserService) CheckExistingUser(username string) (models.User, error) {
-	return models.User{}, errors.New("")
-}
-
-// CheckPassword implements services.UserService.
-func (s *MockUserService) CheckPassword(hashedPassword string, plainPassword string) bool {
-	return true
-}
-
-// CreateToken implements services.UserService.
-func (s *MockUserService) CreateToken(user models.User) (*models.Claims, error) {
-	return &models.Claims{}, nil
-}
-
-// CreateUser implements services.UserService.
-func (s *MockUserService) CreateUser(user models.CreateUser) (string, error) {
-	return "1234", nil
-}
-
-// CreateGuestUser implements services.UserService.
-func (s *MockUserService) CreateGuestUser(user models.CreateGuestUser) (string, error) {
-	return "1234", nil
-}
-
-func (s *MockUserService) UpdateUser(user models.User) error {
-	return nil
-}
-
-func (s *MockUserService) DeleteUser(id string) (int64, error) {
-	return 0, nil
-}
-
-// HashPwd implements services.UserService.
-func (s *MockUserService) HashPwd(password string) (string, error) {
-	return "", nil
-}
-
-type SingleMessageResponse struct {
-	Message string
-}
-
-type LoginResponse struct {
-	Message string
-	Token   string
-}
 
 func SetUpRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
@@ -106,7 +42,7 @@ func TestLoginUserShouldBeSuccess(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(payload))
 
 	router.ServeHTTP(w, req)
-	var response LoginResponse
+	var response helpers.LoginResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	if err != nil {
 		t.Fail()
@@ -136,7 +72,7 @@ func TestLoginUserShouldNotBeSuccess(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(payload))
 
 	router.ServeHTTP(w, req)
-	var response SingleMessageResponse
+	var response helpers.SingleMessageResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 
 	assert.Nil(t, err)
@@ -148,7 +84,7 @@ func TestGetAll(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	repo := helpers.InitMockUserRepository()
-	s := &MockUserService{Repository: repo}
+	s := &helpers.MockUserService{Repository: repo}
 	l := middleware.NewSyslogger(false)
 	userHandler := NewUserHandler(s, l)
 	r.GET("/user-management/users", userHandler.Get)
@@ -179,7 +115,7 @@ func TestPostNewUser(t *testing.T) {
 	}
 
 	repo := helpers.InitMockUserRepository()
-	s := &MockUserService{Repository: repo}
+	s := &helpers.MockUserService{Repository: repo}
 	handler := NewUserHandler(s, middleware.NewSyslogger(false))
 	router := SetUpRouter()
 	router.POST("/user-management/users", handler.PostNewUser)
@@ -190,7 +126,7 @@ func TestPostNewUser(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 
-	var response SingleMessageResponse
+	var response helpers.SingleMessageResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	if err != nil {
 		t.Fail()
@@ -209,7 +145,7 @@ func TestUpdateUser_ShouldUpdate(t *testing.T) {
 		Permission: models.Permission{},
 	}
 	repo := helpers.InitMockUserRepository()
-	s := &MockUserService{Repository: repo}
+	s := &helpers.MockUserService{Repository: repo}
 	l := middleware.NewSyslogger(false)
 	userHandler := NewUserHandler(s, l)
 	r.PUT("/user-management/users/:id", userHandler.UpdateUser)
@@ -226,7 +162,7 @@ func TestDeleteUser_ShouldDelet(t *testing.T) {
 	r := gin.Default()
 
 	repo := helpers.InitMockUserRepository()
-	s := &MockUserService{Repository: repo}
+	s := &helpers.MockUserService{Repository: repo}
 	l := middleware.NewSyslogger(false)
 	userHandler := NewUserHandler(s, l)
 	r.DELETE("/user-management/users/:id", userHandler.DeleteUser)

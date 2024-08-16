@@ -5,7 +5,6 @@ import (
 	"main/pkg/middleware"
 	"main/pkg/models"
 	"main/pkg/services"
-	"main/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +17,8 @@ type UserRouter interface {
 	PostNewUser(c *gin.Context)
 	PostNewGuestUser(c *gin.Context)
 	UpdateUser(c *gin.Context)
+	UpdatePassword(c *gin.Context)
+	UpdateUserPermissions(c *gin.Context)
 	DeleteUser(c *gin.Context)
 }
 
@@ -33,6 +34,9 @@ func NewUserHandler(service services.UserService, logger middleware.Logger) User
 	}
 }
 
+/*
+GET /user-management/users route. Requires admin rights. Returns all users from database.
+*/
 func (u *userRouter) Get(c *gin.Context) {
 	users, err := u.Service.GetAll()
 	if err != nil {
@@ -46,7 +50,9 @@ func (u *userRouter) Get(c *gin.Context) {
 	c.IndentedJSON(200, users)
 }
 
-// GetById implements ReportRouter.
+/*
+GET /user-management/users/:id route. Requires admin rights. Returns single user by ID from database.
+*/
 func (u *userRouter) GetByID(c *gin.Context) {
 	id := c.Param("id")
 	report, err := u.Service.GetByID(id)
@@ -63,67 +69,12 @@ func (u *userRouter) GetByID(c *gin.Context) {
 	c.IndentedJSON(200, report)
 }
 
-// POST /login
-func (u *userRouter) LoginUser(c *gin.Context) {
-	var body models.LoginUser
+/*
+POST /user-management/users route. Requires admin rights. Takes CreateUser model as request body and validates body.
+Then checks if user exists, if exists, returns 400 error.
 
-	if err := c.BindJSON(&body); err != nil {
-		u.Logger.LogError(
-			fmt.Sprintf("Error happened while binding JSON: %v", err),
-		)
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"message": "Error in handling request",
-		})
-		return
-	}
-
-	if body.Username == "" || body.Password == "" {
-		u.Logger.LogError("Malformatted body")
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"message": "Malformatted body",
-		})
-		return
-	}
-
-	existingUser, err := u.Service.CheckExistingUser(body.Username)
-	if err != nil {
-		u.Logger.LogError("No user found")
-		c.IndentedJSON(401, gin.H{
-			"message": "No user found",
-		})
-		return
-	}
-
-	err = utils.CheckPassword(existingUser.PasswordHash, body.Password)
-
-	if err != nil {
-		u.Logger.LogInfo(fmt.Sprintf("Error while checking password: %v", err))
-		c.IndentedJSON(401, gin.H{
-			"message": "Incorrect password",
-		})
-		return
-	}
-
-	token, err := utils.CreateToken(existingUser)
-
-	if err != nil {
-		u.Logger.LogError(
-			fmt.Sprintf("Error happened while creating token: %v", err),
-		)
-		c.IndentedJSON(500, gin.H{
-			"message": "Internal server error",
-		})
-		return
-	}
-
-	c.IndentedJSON(200, gin.H{
-		"message": "Login succesful",
-		"userID":  existingUser.ID.Hex(),
-		"token":   token,
-	})
-}
-
-// POST /users
+Finally creates a new user and returns response with success message.
+*/
 //
 //nolint:dupl
 func (u *userRouter) PostNewUser(c *gin.Context) {
@@ -170,6 +121,12 @@ func (u *userRouter) PostNewUser(c *gin.Context) {
 	})
 }
 
+/*
+PUT /user-management/users route. Requires admin rights. Takes User model as request body and validates body.
+Then checks if user exists, if not, returns 400 error.
+
+Finally creates a updated user object to db and returns response with success message.
+*/
 func (u *userRouter) UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 	var body models.User
@@ -189,6 +146,7 @@ func (u *userRouter) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	/* UpdateUser has allowed update properties for username and email */
 	newReport := models.User{
 		ID:           existingUser.ID,
 		Username:     body.Username,
@@ -211,6 +169,95 @@ func (u *userRouter) UpdateUser(c *gin.Context) {
 	})
 }
 
+/*
+PUT /change-password route. Admin and selective non-admin rights. Takes UserPassword model as request body and validates body.
+Also fetches userID and admin info from gin context. If request is not from admin, checks that user is same. If not return 403 error.
+
+Finally calls UpdatePassword method and if successful, returns response with success message.
+*/
+func (u *userRouter) UpdatePassword(c *gin.Context) {
+	userID, isAdmin, err := middleware.GetSessionData(c)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while getting session data: %v", err),
+		)
+		c.IndentedJSON(500, gin.H{"message": "internal server error"})
+		return
+	}
+	var body models.UserPasswordChange
+	err = c.BindJSON(&body)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while binding JSON: %v", err),
+		)
+		c.IndentedJSON(400, gin.H{"message": "error on parsing request body"})
+		return
+	}
+
+	if body.UserID == "" || body.NewPassword == "" || body.OldPassword == "" {
+		u.Logger.LogError("Invalid body")
+		c.IndentedJSON(400, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	if !isAdmin && userID != body.UserID {
+		u.Logger.LogError("Non-admin user is trying to change other users password")
+		c.IndentedJSON(http.StatusForbidden, gin.H{"message": "illegal request"})
+	}
+
+	// Call UpdatePassword method with userID of user, which password is going to be changed
+	err = u.Service.UpdatePassword(body.UserID, body.OldPassword, body.NewPassword)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while updating user password: %v", err),
+		)
+		c.IndentedJSON(500, gin.H{"message": fmt.Sprintf("error while updating password: %v", err)})
+		return
+	}
+
+	c.IndentedJSON(200, gin.H{"message": "Password updated successfully"})
+}
+
+/*
+PUT /user-management/change-permissions route. Requires admin rights. Takes UserPermissionUpdate model as request body and validates body.
+
+Finally calls UpdateUserPermissions method and if successful, returns response with success message.
+*/
+func (u *userRouter) UpdateUserPermissions(c *gin.Context) {
+	var body models.UserPermissionUpdate
+	err := c.BindJSON(&body)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while binding JSON: %v", err),
+		)
+		c.IndentedJSON(400, gin.H{"message": "error on parsing request body"})
+		return
+	}
+
+	if body.UserID == "" {
+		u.Logger.LogError("Invalid body")
+		c.IndentedJSON(400, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	err = u.Service.UpdateUserPermissions(body.UserID, body.Permissions)
+	if err != nil {
+		u.Logger.LogError(
+			fmt.Sprintf("Error happened while updating permissions: %v", err),
+		)
+		c.IndentedJSON(500, gin.H{"message": "internal server error"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "permissions updated"})
+
+}
+
+/*
+DELETE /user-management/users route. Requires admin rights. Takes id from url parameters.
+
+Calls DeleteUser method and if successful, returns response with success message.
+*/
 func (u *userRouter) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 

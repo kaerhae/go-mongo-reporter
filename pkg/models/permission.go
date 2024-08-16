@@ -1,9 +1,9 @@
 package models
 
 type Permission struct {
-	Admin bool `bson:"admin"`
-	Write bool `bson:"write"`
-	Read  bool `bson:"read"`
+	Admin bool `json:"admin" bson:"admin"`
+	Write bool `json:"write" bson:"write"`
+	Read  bool `json:"read" bson:"read"`
 }
 
 func (p *Permission) SetDefaultPermissions() {
