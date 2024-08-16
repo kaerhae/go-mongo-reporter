@@ -10,16 +10,17 @@ import (
 
 func TestTokenCreation(t *testing.T) {
 	os.Setenv("SECRET_KEY", "123")
+	permission := models.Permission{}
+	permission.SetDefaultPermissions()
 	user := models.User{
-		Username: "tester",
+		Username:   "tester",
+		Permission: permission,
 	}
-	claims, err := CreateToken(user)
+	token, err := CreateToken(user)
 	if err != nil {
 		t.Fail()
 	}
-	assert.Equal(t, user.Username, claims.Username)
-	assert.Equal(t, user.AppRole, claims.AppRole)
-	assert.NotEmpty(t, claims.Token)
+	assert.NotEmpty(t, token)
 
 	os.Unsetenv("SECRET_KEY")
 }

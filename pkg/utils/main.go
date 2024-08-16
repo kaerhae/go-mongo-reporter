@@ -39,31 +39,26 @@ func CheckPassword(hashedPassword string, plainPassword string) error {
 	return nil
 }
 
-func CreateToken(user models.User) (*models.Claims, error) {
+func CreateToken(user models.User) (string, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"username": user.Username,
-			"exp":      time.Now().Add(time.Minute * 30).Unix(),
-		})
-
-	secretKey := []byte(configs.GetSecret())
-
-	tokenstring, err := token.SignedString(secretKey)
-	claims := &models.Claims{
-		Username:       user.Username,
-		AppRole:        user.AppRole,
-		Token:          tokenstring,
-		ExpirationTime: expirationTime,
+	claims := models.Claims{
+		UserID:      user.ID,
+		Username:    user.Username,
+		Permissions: user.Permission,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		claims)
+	secretKey := []byte(configs.GetSecret())
+	tokenstring, err := token.SignedString(secretKey)
+
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return claims, nil
+	return tokenstring, nil
 }

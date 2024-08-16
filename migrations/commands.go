@@ -35,7 +35,7 @@ func createAdminUserUp(adminUser string, adminPass string) {
 		log.Fatal("Error on connecting MongoDB", err)
 	}
 	r := repository.NewUserRepository(client)
-	_, err = r.GetSingleUser(adminUser)
+	_, err = r.GetSingleUserByUsername(adminUser)
 	if err == nil {
 		log.Default().Println("migration already done and user exists")
 		os.Exit(0)
@@ -56,8 +56,12 @@ func createAdminUserUp(adminUser string, adminPass string) {
 		Email:        "",
 		PasswordHash: hashPwd,
 		CreatedAt:    time.Now().UTC().String(),
-		AppRole:      "admin",
-		Reports:      []primitive.ObjectID{},
+		Permission: models.Permission{
+			Admin: true,
+			Write: true,
+			Read:  true,
+		},
+		Reports: []primitive.ObjectID{},
 	}
 
 	_, err = r.Create(&admin)
@@ -71,13 +75,9 @@ func createAdminUserDown() {
 	if err != nil {
 		log.Fatal("Error on connecting MongoDB", err)
 	}
-	adminID, err := primitive.ObjectIDFromHex("000011112222333344445555")
-	if err != nil {
-		log.Fatal("Error while creating ID ", err)
-	}
 
 	r := repository.NewUserRepository(client)
-	deleteCount, err := r.DeleteSingleUser(adminID)
+	deleteCount, err := r.DeleteSingleUser("000011112222333344445555")
 	if err != nil {
 		log.Fatal("Error while deleting admin user: ", err)
 	}

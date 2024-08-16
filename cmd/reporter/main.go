@@ -21,7 +21,8 @@ func main() {
 	mongoIP := os.Getenv("MONGO_IP")
 	mongoPort := os.Getenv("MONGO_PORT")
 	db := os.Getenv("DATABASE")
-	if mongoUser == "" || mongoPass == "" || mongoIP == "" || mongoPort == "" || db == "" {
+	secret := os.Getenv("SECRET_KEY")
+	if mongoUser == "" || mongoPass == "" || mongoIP == "" || mongoPort == "" || db == "" || secret == "" {
 		log.Fatal("MongoDB environment variables are missing")
 	}
 

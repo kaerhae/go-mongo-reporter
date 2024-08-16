@@ -1,15 +1,14 @@
 package models
 
 import (
-	"time"
-
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Claims struct {
-	Username       string `json:"username"`
-	AppRole        string `json:"appRole"`
-	Token          string
-	ExpirationTime time.Time
+	UserID      primitive.ObjectID `json:"id"`
+	Username    string             `json:"username"`
+	Permissions Permission         `json:"permission"`
+	Token       string
 	jwt.StandardClaims
 }
